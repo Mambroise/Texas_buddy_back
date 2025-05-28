@@ -1,0 +1,150 @@
+<!-- # ---------------------------------------------------------------------------
+#                    L e B o n P l a n T e x a s   ( 2 0 2 4 )
+# ---------------------------------------------------------------------------
+# File   : texasbuddy/notifications/templates/email/base_email.html
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Buddy</title>
+    <style>
+        .modal {
+            width: 40vw;
+            margin: auto;
+            background: linear-gradient(rgb(152, 48, 63),rgb(152, 48, 63),rgb(255, 255, 255),rgb(255, 255, 255));
+            border: 1px solid #333;
+            border-bottom: none;
+            border-radius: 8px 8px 0px 0px;
+            color: var(--black-color);
+        }
+        @media (max-width: 750px) {
+            .modal{
+                width: 95vw;
+            }
+        }
+        .terms-bg-image {
+            position: relative;
+            height: 35vh;
+            width: 100%;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .container {
+            width: 85%;
+            margin: auto;
+            padding: 2rem;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: white;
+            border-radius: 3px;
+        } 
+        .my-0 {
+            margin: 0.3rem 0rem;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .c-red{
+            color: red;
+        }
+        .c-green{
+            color: green;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .hr {
+            margin-top: 1rem;
+            background-color: white;
+            height: 1px; 
+            border: none; 
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: rgba(36, 32, 32,0.9);
+            color: white;
+        }
+        .total-row {
+            font-weight: bold;
+            background-color: rgba(226,114,91,0.9);
+        }
+        .frame {
+            width: 60%;
+            border: 2px solid rgb(152, 48, 63);
+            border-radius: 5px;
+            margin: 10px auto;
+            padding: 5px 40px;
+            text-align: center;
+            background: rgb(152, 48, 63);
+        }
+        .frame p {
+            font-size: 1.2rem;
+            color: white;
+        }
+        .footer {
+            height: 4vh;
+            width: 99.9%;
+            background: rgb(152, 48, 63);
+            border: 1px solid #333;
+            border-top: none;
+        }
+        
+        h1 {
+            color: rgb(152, 48, 63);
+            text-align: center;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+        .highlight {
+            font-weight: bold;
+        }
+        .cta {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .cta a {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: rgb(152, 48, 63);
+            color: #fff;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .cta a:hover {
+            background-color: rgb(152, 48, 63);
+        }
+    </style>
+</head>
+<body>
+    <div class="modal">
+        <div class="terms-bg-image">
+            <img src="cid:austin" alt="austincolorado river" width="100%" height="auto" style="background-size: cover;background-position: bottom;">  
+            <hr class="hr">                
+        </div>
+        {% block content %}
+        {% endblock %}
+        <div class="footer">
+            <p style="color: white; text-align: center;">Texas Buddy</p>
+        </div>
+    </div>
+</body>
+</html>
