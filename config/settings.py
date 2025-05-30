@@ -95,6 +95,14 @@ DATABASES = {
 # DRF-Spectacular documentation configuration
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '3/minute',   # utilisateurs non authentifiés
+        'user': '5/minute',  # utilisateurs authentifiés
+    }
 }
 
 SPECTACULAR_SETTINGS = {

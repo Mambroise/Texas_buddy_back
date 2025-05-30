@@ -1,1 +1,1 @@
-from .user_endpoints import *
+from .user_views import *
