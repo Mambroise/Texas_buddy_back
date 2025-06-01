@@ -22,7 +22,7 @@ def send_credentials_email(user):
 
         # Render the email template with context data
         subject = object_content
-        from_email = settings.DEFAULT_FROM_EMAIL
+        from_email = settings.EMAIL_HOST_USER
         to_email = user.email
         text_content = 'your email client does not support HTML content'
 
@@ -54,7 +54,7 @@ def send_2fa_code_email(user, code):
 
         # Render the email template with context data
         subject = object_content
-        from_email = settings.DEFAULT_FROM_EMAIL
+        from_email = settings.EMAIL_HOST_USER
         to_email = user.email
         text_content = 'your email client does not support HTML content'
 
@@ -73,10 +73,6 @@ def send_2fa_code_email(user, code):
         
     except Exception as e:
         print('send_2fa_code_email email error:', {e})
-
-
-
-
 
 
 def attach_pic_to_email(email):

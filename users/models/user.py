@@ -19,3 +19,6 @@ class User(AbstractUser):
     sign_up_number = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now=True)
     can_set_password = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+
+    

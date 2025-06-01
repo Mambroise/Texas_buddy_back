@@ -6,7 +6,7 @@
 # --------------------------------------------------------------------------- -->
 
 
-{% extends 'base_email.html' %}
+{% extends 'email_base.html' %}
 
 {% load i18n %}
 {% block content %}
@@ -23,4 +23,4 @@
         <p >{% translate 'The code above will expire in 10 minutes.' %}</p>
         <p class="text-center">{% translate 'See you soon in Texas!' %}</p>
     </div>
-{% end block %}
+{% endblock %}
