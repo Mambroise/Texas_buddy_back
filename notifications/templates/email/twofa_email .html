@@ -1,0 +1,26 @@
+<!-- # ---------------------------------------------------------------------------
+#                    L e B o n P l a n T e x a s   ( 2 0 2 4 )
+# ---------------------------------------------------------------------------
+# File   : texasbuddy/notifications/templates/email/twofa_email.html
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+{% extends 'email_base.html' %}
+
+{% load i18n %}
+{% block content %}
+ <h3  style="color: white; text-align: center; font-size: 2rem;">{% translate 'Security first!' %}</h3>
+    <hr style="background-color: white; height: 1px; border: none;">
+    <div class="container">
+        <h1>Texas Buddy</h1>
+        <p>Howdy {{ user.first_name|capfirst }}</p>
+        <p>{% translate 'Please review and keep the following information:' %}</p>
+        <hr><br>
+        <h3 class="text-center">{% translate '⚠️ Important: your verification code' %}</h3>
+        <p class="my-0">{{ code }}</p>
+        <br>
+        <p >{% translate 'The code above will expire in 10 minutes.' %}</p>
+        <p class="text-center">{% translate 'See you soon in Texas!' %}</p>
+    </div>
+{% endblock %}

@@ -7,10 +7,14 @@
 
 
 from django.urls import path
-from .views.user_endpoints import CustomerImportAPIView
+from .views.user_views import CustomerImportAPIView
+from users.views.auth_views import VerifyRegistrationAPIView, Verify2FACodeAPIView,SetPasswordAPIView
 
 app_name = 'users'
 
 urlpatterns = [
     path('import-customer/', CustomerImportAPIView.as_view(), name='import-customer'),
+    path("auth/verify-registration/", VerifyRegistrationAPIView.as_view(), name="verify-registration"),
+    path("auth/verify-2fa-code/", Verify2FACodeAPIView.as_view(), name="verify-2fa"),
+    path("auth/set-password/", SetPasswordAPIView.as_view(), name="set-password"),
 ]

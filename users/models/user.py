@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :texasbuddy/users/models.py
+# File   :texasbuddy/users/models/user.py
 # Author : Morice
 # ---------------------------------------------------------------------------
 
@@ -18,3 +18,7 @@ class User(AbstractUser):
     country = CountryField( null=False, blank=False)
     sign_up_number = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now=True)
+    can_set_password = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+
+    
