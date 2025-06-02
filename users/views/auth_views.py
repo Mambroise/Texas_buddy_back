@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :texasbuddy/users/views/registration_view.py
+# File   :texasbuddy/users/views/auth_views.py
 # Author : Morice
 # ---------------------------------------------------------------------------
 
@@ -11,11 +11,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from django_ratelimit.decorators import ratelimit
 from django.utils.decorators import method_decorator
-from users.models.twofa import TwoFACode
-from users.serializers import TwoFACodeVerificationSerializer
 
+from users.models.twofa import TwoFACode
+from users.serializers import TwoFACodeVerificationSerializer,SetPasswordSerializer,RegistrationVerificationSerializer
 from ..models.user import User
-from users.serializers import RegistrationVerificationSerializer
 from ..service.twoFACode import generate_2fa_code
 
 # Method first connexion to the app, checking the registration code sent to the customer
@@ -65,3 +64,30 @@ class Verify2FACodeAPIView(APIView):
             return Response({"detail": "code valid. go to pwd creation"},status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": "Utilisateur non trouvé."}, status=status.HTTP_404_NOT_FOUND)
+
+
+@method_decorator(ratelimit(key='ip', rate='3/m', method='POST', block=True), name='dispatch')
+class SetPasswordAPIView(APIView):
+    def post(self, request):
+        serializer = SetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        password = serializer.validated_data['password']
+
+        try:
+            user = User.objects.get(email=email)
+
+            if not user.can_set_password:
+                return Response({"detail": "Please, fulfill registration first."},
+                                status=status.HTTP_403_FORBIDDEN)
+
+            user.set_password(password)
+            user.can_set_password = False
+            user.is_active = True  # facultatif : si tu veux activer ici
+            user.save()
+
+            return Response({"detail": "Password succesfully set."},
+                            status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
