@@ -10,6 +10,7 @@ from rest_framework import serializers
 from .models.user import User
 from django.contrib.auth.password_validation import validate_password
 
+#  User create
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -23,9 +24,13 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data['username'] = email
         return super().create(validated_data)
 
+# ask django to create new sign_up_number and send it in an emil
+class ResendRegistrationNumberSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
 
 class RegistrationVerificationSerializer(serializers.Serializer):
-    registration_number = serializers.CharField()
+    sign_up_number = serializers.CharField()
     email = serializers.EmailField()
 
 
@@ -41,3 +46,7 @@ class SetPasswordSerializer(serializers.Serializer):
     def validate_password(self, value):
         validate_password(value)
         return value
+
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True)
