@@ -1,3 +1,11 @@
+# ---------------------------------------------------------------------------
+#                           TEXAS BUDDY   ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   :texasbuddy/users/services/twoFACode.py
+# Author : Morice
+# ---------------------------------------------------------------------------
+
+
 import random
 from notifications.services.email_service import send_2fa_code_email
 from users.models.twofa import TwoFACode

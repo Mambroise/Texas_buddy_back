@@ -69,7 +69,7 @@ class Verify2FACodeAPIView(APIView):
             user.can_set_password = True
             user.save()
 
-            return Response({"detail": "code valid. go to pwd creation"},status=status.HTTP_200_OK)
+            return Response({"detail": "code valid. You can now set your password"},status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({"detail": "No user found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -141,6 +141,23 @@ class LoginAPIView(APIView):
             'refresh': str(refresh),
             'access': str(refresh.access_token),
         })
+    
+    
+# logged in User ask for a password reset 
+@method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
+class RequestPasswordResetAPIView(APIView):
+    def post(self, request):
+        email = request.data.get("email")
+        if not email:
+            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email)
+            generate_2fa_code(user)
+            return Response({"detail": "Security code has been sent by email."}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({"detail": "No user with this email was found ."}, status=status.HTTP_404_NOT_FOUND)
+
     
 # logout standard, pour déconnecter un appareil de l'application
 """ 
