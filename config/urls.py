@@ -27,5 +27,8 @@ urlpatterns = [
     path('api/core/', include('core.urls', namespace='core')),
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
     
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
