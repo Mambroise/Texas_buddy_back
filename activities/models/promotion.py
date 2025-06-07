@@ -23,8 +23,8 @@ class Promotion(models.Model):
     end_date = models.DateTimeField()
 
     # Lien vers Activity ou Event (un seul à la fois)
-    activity = models.ForeignKey("activity.Activity", on_delete=models.CASCADE, null=True, blank=True, related_name="promotions")
-    event = models.ForeignKey("activity.Event", on_delete=models.CASCADE, null=True, blank=True, related_name="promotions")
+    activity = models.ForeignKey("activities.Activity", on_delete=models.CASCADE, null=True, blank=True, related_name="promotions")
+    event = models.ForeignKey("activities.Event", on_delete=models.CASCADE, null=True, blank=True, related_name="promotions")
 
     is_active = models.BooleanField(default=True)
 
