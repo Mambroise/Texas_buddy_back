@@ -18,6 +18,8 @@ from ..models import User
 
 @method_decorator(ratelimit(key='ip', rate='5/m', method='POST', block=True), name='dispatch')
 class CustomerImportAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         try:
             serializer = UserSerializer(data=request.data)

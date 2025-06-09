@@ -23,3 +23,9 @@ class EventListAPIView(generics.ListAPIView):
     ordering_fields = ["start_datetime", "price", "created_at"]
     
     search_fields = ["title", "description", "location", "city"]
+
+class EventDetailAPIView(generics.RetrieveAPIView):
+    queryset = Event.objects.prefetch_related("category", "promotions")
+    serializer_class = EventSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    lookup_field = "id"
