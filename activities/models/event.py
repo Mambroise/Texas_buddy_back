@@ -7,6 +7,8 @@
 
 
 from django.db import models
+from django.utils import timezone
+
 from .category import Category
 from ..service import generic_image_upload_to
 from ..validators import validate_image
@@ -31,3 +33,10 @@ class Event(models.Model):
 
     def __str__(self):
         return self.title
+    
+    @property
+    def current_promotion(self):
+        now = timezone.now()
+        return self.promotions.filter(
+            is_active=True, start_date__lte=now, end_date__gte=now
+        ).first()

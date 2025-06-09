@@ -7,7 +7,8 @@
 
 
 from django.db import models
-from datetime import timezone
+from django.utils import timezone 
+
 
 from .category import Category
 from ..service import generic_image_upload_to
