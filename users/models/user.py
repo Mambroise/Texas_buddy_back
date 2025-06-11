@@ -14,7 +14,7 @@ from django.utils import timezone
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("L'email est obligatoire")
+            raise ValueError("Email is required")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -41,6 +41,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     address = models.CharField(max_length=200, null=True, blank=True)
     country = CountryField()
     sign_up_number = models.CharField(max_length=100)
+    first_ip = models.GenericIPAddressField(null=True, blank=True)
+    second_ip = models.GenericIPAddressField(null=True, blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
     can_set_password = models.BooleanField(default=False)
 

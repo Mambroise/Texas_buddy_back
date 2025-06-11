@@ -9,7 +9,6 @@
 from django.db import models
 from django.utils import timezone 
 
-
 from .category import Category
 from ..service import generic_image_upload_to
 from ..validators import validate_image
