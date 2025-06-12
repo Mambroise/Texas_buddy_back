@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'core',
     'notifications',
     "rest_framework_simplejwt.token_blacklist",
+    'modeltranslation',
 ]
 
 MIDDLEWARE = [

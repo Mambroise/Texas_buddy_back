@@ -9,8 +9,6 @@
 import logging
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from django_ratelimit.decorators import ratelimit
-from django.utils.decorators import method_decorator
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 from users.serializers import LoginSerializer
@@ -29,7 +27,7 @@ from notifications.services.email_service import send_credentials_email
 from .base import RateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
-logger = logging.getLogger('Texasbuddy')
+logger = logging.getLogger('texasbuddy')
 
 # ─── View: VerifyRegistrationAPIView ───────────────────────────────────────────
 # Method first connexion to the app, checking the registration code sent to the customer
@@ -50,7 +48,7 @@ class VerifyRegistrationAPIView(RateLimitedAPIView):
             if user.is_active:
                 logger.warning(f"[VERIFY_REGISTRATION] Account already active: {email}")
                 return Response(
-                    {"detail": "This account is already active. Please log in instead."},
+                    {"detail": _("This account is already active. Please log in instead.")},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
