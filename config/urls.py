@@ -10,6 +10,7 @@ from django.urls import path,include
 from django.conf.urls.static import static
 from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView,SpectacularRedocView
+from django.conf.urls.i18n import i18n_patterns
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +29,8 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
     
 ]
+# Ajout du support des langues
+urlpatterns = i18n_patterns(*urlpatterns)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

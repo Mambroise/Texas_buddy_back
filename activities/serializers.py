@@ -52,7 +52,7 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
             "id", "name", "description", "category",
             "address", "city", "state", "zip_code", "latitude", "longitude",
             "image", "website", "phone", "email",
-            "price", "staff_favorite", "is_active", "created_at",
+            "price", "duration", "staff_favorite", "is_active", "created_at",
             "current_promotion"
         ]
 
@@ -67,7 +67,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = [
             "id", "title", "description", "start_datetime", "end_datetime",
             "location", "city", "state", "latitude", "longitude",
-            "category", "website", "image", "price", "staff_favorite",
+            "category", "website", "image", "price", "duration", "staff_favorite",
             "is_public", "created_at",
             "promotions", "current_promotion", "has_promotion"
         ]
