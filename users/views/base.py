@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 
 class RateLimitedAPIView(APIView):
-    rate = '5/m'
+    rate = '8/m'
     method = 'POST'
 
     @classmethod

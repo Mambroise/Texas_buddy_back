@@ -23,6 +23,7 @@ urlpatterns = [
     # apps routes
     path('api/users/', include('users.urls', namespace='users')),
     path('api/activities/', include('activities.urls', namespace='activities')),
+    path('api/planners/', include('planners.urls', namespace='planners')),
     path('api/ads/', include('ads.urls', namespace='ads')),
     path('api/community/', include('community.urls', namespace='community')),
     path('api/core/', include('core.urls', namespace='core')),

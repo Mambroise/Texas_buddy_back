@@ -19,8 +19,8 @@ class Promotion(models.Model):
     description = models.TextField(blank=True)
     discount_type = models.CharField(max_length=20, choices=DISCOUNT_TYPE_CHOICES)
     amount = models.DecimalField(max_digits=8, decimal_places=2)
-    start_date = models.DateTimeField()
-    end_date = models.DateTimeField()
+    start_date = models.DateField()
+    end_date = models.DateField()
 
     # Lien vers Activity ou Event (un seul à la fois)
     activity = models.ForeignKey("activities.Activity", on_delete=models.CASCADE, null=True, blank=True, related_name="promotions")

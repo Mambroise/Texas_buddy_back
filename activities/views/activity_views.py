@@ -15,7 +15,7 @@ from rest_framework.filters import SearchFilter, OrderingFilter
 from ..filters import ActivityFilter
 
 class ActivityListAPIView(generics.ListAPIView):
-    queryset = Activity.objects.all()
+    queryset = Activity.objects.all().prefetch_related("category", "promotions")
     serializer_class = ActivityListSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ActivityFilter
