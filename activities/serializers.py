@@ -38,7 +38,24 @@ class ActivityListSerializer(serializers.ModelSerializer):
         ]
 
     def get_has_promotion(self, obj):
-        return obj.current_promotion is not None
+        request = self.context.get('request')
+        date_str = request.query_params.get('date') if request else None
+
+        from datetime import datetime
+        from django.utils import timezone
+
+        try:
+            reference_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
+        except ValueError:
+            reference_date = timezone.now().date()
+
+        promotion = obj.promotions.filter(
+            is_active=True,
+            start_date__lte=reference_date,
+            end_date__gte=reference_date
+        ).first()
+
+        return promotion is not None
 
 
 # --- Détail : utilisé lorsqu'on clique sur une activité ---
@@ -58,7 +75,7 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
 
 class EventSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
-    promotions = PromotionSerializer(source='promotions', many=True, read_only=True)
+    promotions = PromotionSerializer(many=True, read_only=True)
     current_promotion = serializers.SerializerMethodField()
     has_promotion = serializers.SerializerMethodField()
 
@@ -79,7 +96,23 @@ class EventSerializer(serializers.ModelSerializer):
         return None
 
     def get_has_promotion(self, obj):
-        return obj.current_promotion is not None
+        request = self.context.get('request')
+        date_str = request.query_params.get('date') if request else None
+
+        from datetime import datetime
+        from django.utils import timezone
+
+        try:
+            reference_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
+        except ValueError:
+            reference_date = timezone.now().date()
+
+        return obj.promotions.filter(
+            is_active=True,
+            start_date__lte=reference_date,
+            end_date__gte=reference_date
+        ).exists()
+
 
 class PromotionLiteSerializer(serializers.ModelSerializer):
     class Meta:
