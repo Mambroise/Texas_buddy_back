@@ -29,12 +29,13 @@ class PromotionSerializer(serializers.ModelSerializer):
 class ActivityListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     has_promotion = serializers.SerializerMethodField()
+    distance = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Activity
         fields = [
             "id", "name", "latitude", "longitude", "category",
-            "staff_favorite", "price", "has_promotion"
+            "staff_favorite", "price", "has_promotion", "distance",
         ]
 
     def get_has_promotion(self, obj):
@@ -63,6 +64,7 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     current_promotion = PromotionSerializer(read_only=True)
 
+
     class Meta:
         model = Activity
         fields = [
@@ -78,15 +80,16 @@ class EventSerializer(serializers.ModelSerializer):
     promotions = PromotionSerializer(many=True, read_only=True)
     current_promotion = serializers.SerializerMethodField()
     has_promotion = serializers.SerializerMethodField()
+    distance = serializers.FloatField(read_only=True)
 
     class Meta:
         model = Event
         fields = [
-            "id", "title", "description", "start_datetime", "end_datetime",
+            "id", "name", "description", "start_datetime", "end_datetime",
             "location", "city", "state", "latitude", "longitude",
             "category", "website", "image", "price", "duration", "staff_favorite",
             "is_public", "created_at",
-            "promotions", "current_promotion", "has_promotion"
+            "promotions", "current_promotion", "has_promotion", "distance",
         ]
 
     def get_current_promotion(self, obj):

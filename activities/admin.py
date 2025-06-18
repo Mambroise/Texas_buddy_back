@@ -26,9 +26,9 @@ class ActivityAdmin(admin.ModelAdmin):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("title", "start_datetime", "end_datetime", "city", "is_public")
+    list_display = ("name", "start_datetime", "end_datetime", "city", "is_public")
     list_filter = ("is_public", "category")
-    search_fields = ("title", "description", "city")
+    search_fields = ("name", "description", "city")
 
 @admin.register(Promotion)
 class PromotionAdmin(admin.ModelAdmin):

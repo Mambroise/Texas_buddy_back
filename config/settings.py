@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     'planners',
     'ads',
     'community',
-    'core',
     'notifications',
     "rest_framework_simplejwt.token_blacklist",
     'modeltranslation',
@@ -205,6 +204,9 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+
+# API KEYS
+GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
 
 LOGGING = {

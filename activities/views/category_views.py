@@ -10,8 +10,9 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from ..models.category import Category
 from ..serializers import CategorySerializer
+from core.mixins import ListLogMixin
 
-class CategoryListAPIView(generics.ListAPIView):
+class CategoryListAPIView(ListLogMixin,generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticated]

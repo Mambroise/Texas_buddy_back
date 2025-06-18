@@ -10,10 +10,12 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+
 from ..models.promotion import Promotion
 from ..serializers import PromotionSerializer
+from core.mixins import ListLogMixin
 
-class PromotionListAPIView(generics.ListAPIView):
+class PromotionListAPIView(ListLogMixin,generics.ListAPIView):
     queryset = Promotion.objects.filter(
         is_active=True,
         start_date__lte=timezone.now(),
