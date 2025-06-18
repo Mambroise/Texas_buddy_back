@@ -10,6 +10,7 @@ from rest_framework import serializers
 from .models import Trip, TripDay, TripStep
 from activities.serializers import ActivityListSerializer, EventSerializer
 from activities.models import Activity, Event
+from .services.address_service import get_or_create_address_cache
 
 class TripStepSerializer(serializers.ModelSerializer):
     activity = ActivityListSerializer(read_only=True)
@@ -43,16 +44,32 @@ class TripStepSerializer(serializers.ModelSerializer):
         return instance
 
 
+
+
 class TripDaySerializer(serializers.ModelSerializer):
-    steps = serializers.SerializerMethodField()
+    address = serializers.CharField(write_only=True, required=True)
+    latitude = serializers.FloatField(read_only=True)
+    longitude = serializers.FloatField(read_only=True)
 
     class Meta:
         model = TripDay
-        fields = ['id', 'trip', 'date', 'location_name', 'latitude', 'longitude', 'steps']
+        fields = ['id', 'trip', 'date', 'address', 'latitude', 'longitude']
 
-    def get_steps(self, obj):
-        ordered_steps = obj.steps.order_by("start_time")
-        return TripStepSerializer(ordered_steps, many=True).data
+    def create(self, validated_data):
+        address = validated_data.pop('address')
+        address_cache = get_or_create_address_cache(address)
+        trip_day = TripDay.objects.create(address_cache=address_cache, **validated_data)
+        return trip_day
+
+    def update(self, instance, validated_data):
+        address = validated_data.pop('address', None)
+        if address:
+            address_cache = get_or_create_address_cache(address)
+            instance.address_cache = address_cache
+
+        instance.date = validated_data.get('date', instance.date)
+        instance.save()
+        return instance
 
 class TripSerializer(serializers.ModelSerializer):
     days = TripDaySerializer(many=True, read_only=True)

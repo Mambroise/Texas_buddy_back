@@ -26,7 +26,6 @@ urlpatterns = [
     path('api/planners/', include('planners.urls', namespace='planners')),
     path('api/ads/', include('ads.urls', namespace='ads')),
     path('api/community/', include('community.urls', namespace='community')),
-    path('api/core/', include('core.urls', namespace='core')),
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
     
 ]

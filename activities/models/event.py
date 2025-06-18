@@ -14,7 +14,7 @@ from ..service import generic_image_upload_to
 from ..validators import validate_image
 
 class Event(models.Model):
-    title = models.CharField(max_length=255)
+    name = models.CharField(max_length=255)
     description = models.TextField()
     start_datetime = models.DateTimeField()
     end_datetime = models.DateTimeField()
@@ -35,7 +35,7 @@ class Event(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return self.title
+        return self.name
     
     @property
     def current_promotion(self):
