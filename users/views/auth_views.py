@@ -15,6 +15,7 @@ from users.serializers import LoginSerializer
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from django.utils.translation import gettext as _
 
 from users.models.twofa import TwoFACode
 from users.serializers import (TwoFACodeVerificationSerializer,
@@ -53,12 +54,12 @@ class VerifyRegistrationAPIView(RateLimitedAPIView):
                 )
 
             generate_2fa_code(user)
-            return Response({"detail": "Registration verified. 2fa code sent"}, status=status.HTTP_200_OK)
+            return Response({"message": _("Registration verified. 2fa code sent")}, status=status.HTTP_200_OK)
 
         except User.DoesNotExist:
             logger.error("[VERIFY_REGISTRATION] sign_up_number verification failed: user not found for email %s", email)
             return Response(
-                {"detail": "Invalid registration number or email."},
+                {"detail": _("Invalid registration number or email.")},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -80,7 +81,7 @@ class Verify2FACodeAPIView(RateLimitedAPIView):
             code_entry = TwoFACode.objects.filter(user=user, code=code, is_used=False).last()
             if not code_entry or code_entry.is_expired():
                 logger.warning("[2FA_REGISTRATION] expired or missing request: %s", request.data)
-                return Response({"detail": "invalid code or expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": _("invalid code or expired.")}, status=status.HTTP_400_BAD_REQUEST)
 
             # switch bool to true as code has been used
             code_entry.is_used = True
@@ -90,10 +91,10 @@ class Verify2FACodeAPIView(RateLimitedAPIView):
             user.save()
             logger.info("[2FA_REGISTRATION] 2FACode verification successful for user: %s", email)
 
-            return Response({"detail": "code valid. You can now set your password"},status=status.HTTP_200_OK)
+            return Response({"message": _("code valid. You can now set your password")},status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[2FA_REGISTRATION] 2FA verification failed: user not found for email %s", email)
-            return Response({"detail": "No user found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
 
 # Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
 class VerifyResetPwd2FACodeAPIView(RateLimitedAPIView):
@@ -113,7 +114,7 @@ class VerifyResetPwd2FACodeAPIView(RateLimitedAPIView):
 
             if not code_entry or code_entry.is_expired():
                 logger.warning("[2FA_REGISTRATION] expired or missing request: %s", request.data)
-                return Response({"detail": "invalid code or expired."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"detail": _("invalid code or expired.")}, status=status.HTTP_400_BAD_REQUEST)
 
             # switch bool to true as code has been used
             code_entry.is_used = True
@@ -123,10 +124,10 @@ class VerifyResetPwd2FACodeAPIView(RateLimitedAPIView):
             user.can_set_password = True
             user.save()
 
-            return Response({"detail": "code valid. You can now set your password"},status=status.HTTP_200_OK)
+            return Response({"message": _("code valid. You can now set your password")},status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[2FA_RESET_PWD] 2FA verification failed: user not found for email %s", email)
-            return Response({"detail": "No user found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
 
 
 # Method to set the pwd in user entity
@@ -155,7 +156,7 @@ class SetPasswordAPIView(RateLimitedAPIView):
 
             if not user.can_set_password:
                 logger.warning(f"[RESET_PASSWORD] Attempt to reset without verification: {email}")
-                return Response({"detail": "Please, fulfill registration first."},
+                return Response({"detail": _("Please, fulfill registration first.")},
                                 status=status.HTTP_403_FORBIDDEN)
 
             user.set_password(password)
@@ -171,11 +172,11 @@ class SetPasswordAPIView(RateLimitedAPIView):
                     logger.info(f"[RESET_PASSWORD] First IP saved for: {email}")
 
 
-            return Response({"detail": "Password succesfully set."},
+            return Response({"message": _("Password succesfully set.")},
                             status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[RESET_PASSWORD] Password set failed: user not found for email %s", email)
-            return Response({"detail": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("User not found.")}, status=status.HTTP_404_NOT_FOUND)
 
 
 class ResendRegistrationNumberAPIView(RateLimitedAPIView):
@@ -192,11 +193,11 @@ class ResendRegistrationNumberAPIView(RateLimitedAPIView):
             send_credentials_email(user)
             logger.info("[RESEND_SIGN_UP_NUMBER] sign_up_number successfully sent by email to user: %s", request.user.email)
 
-            return Response({"detail": "Your Registration code has been sent by email."},
+            return Response({"message": _("Your Registration code has been sent by email.")},
                             status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[RESEND_SIGN_UP_NUMBER] Sign_up_number could not be sent: user not found for email %s", email)
-            return Response({"detail": "No user was found with your email."},
+            return Response({"detail": _("No user was found with your email.")},
                             status=status.HTTP_404_NOT_FOUND)
         
 
@@ -204,22 +205,22 @@ class LoginAPIView(RateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
-        logger.info("[LOGIN] Incoming login data for user: %s", request.user.email)
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
+        logger.info("[LOGIN] Incoming login data for user: %s", email)
 
         user = authenticate(request, username=email, password=password)
 
         if user is None:
             logger.warning(f"[LOGIN] Failed login attempt for: {email}")
-            return Response({"detail": "invalid Email or pssword."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": _("invalid Email or pssword.")}, status=status.HTTP_401_UNAUTHORIZED)
 
         if not user.is_active:
             logger.warning(f"[LOGIN] Inactive user login attempt: {email}")
-            return Response({"detail": "User not active yet."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": _("User not active yet.")}, status=status.HTTP_403_FORBIDDEN)
 
         refresh = RefreshToken.for_user(user)
         logger.info(f"[LOGIN] Login successful for: {email}")
@@ -237,16 +238,16 @@ class RequestPasswordResetAPIView(RateLimitedAPIView):
         email = request.data.get("email")
         if not email:
             logger.warning("[REQUEST_PASSWORD_RESET] Missing email in request.")
-            return Response({"detail": "Email is required."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Email is required.")}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             user = User.objects.get(email=email)
             generate_2fa_code(user)
             logger.info("[REQUEST_PASSWORD_RESET] 2FA code successfully sent to user: %s", request.user.email)
-            return Response({"detail": "Security code has been sent by email."}, status=status.HTTP_200_OK)
+            return Response({"message": _("Security code has been sent by email.")}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[REQUEST_PASSWORD_RESET] Password reset failed: user not found for email %s", email)
-            return Response({"detail": "No user with this email was found ."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"detail": _("No user with this email was found.")}, status=status.HTTP_404_NOT_FOUND)
 
     
 # logout standard, pour déconnecter un appareil de l'application
@@ -312,10 +313,10 @@ class LogoutAPIView(RateLimitedAPIView):
             token = RefreshToken(refresh_token)
             token.blacklist()
             logger.info(f"[LOGOUT] User {request.user.email} logged out successfully.")
-            return Response({"detail": "Logout successful."}, status=status.HTTP_205_RESET_CONTENT)
+            return Response({"message": _("Logout successful.")}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
             logger.warning(f"[LOGOUT] Logout failed for user {request.user.email}: {str(e)}")
-            return Response({"detail": "Invalid or expired token."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": _("Invalid or expired token.")}, status=status.HTTP_400_BAD_REQUEST)
 
 """ 
 📬 3. Exemple d’appel Postman
@@ -330,7 +331,7 @@ Réponse :
 
 json
 {
-  "detail": "Déconnexion de tous les appareils réussie."
+  "message": "Déconnexion de tous les appareils réussie."
 }
 
 🚪 2. Logout global (LogoutAllAPIView sans besoin de token refresh)

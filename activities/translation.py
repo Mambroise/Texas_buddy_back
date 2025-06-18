@@ -1,3 +1,10 @@
+# ---------------------------------------------------------------------------
+#                           TEXAS BUDDY   ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   :activities/translation.py
+# Author : Morice
+# ---------------------------------------------------------------------------
+
 
 from modeltranslation.translator import register, TranslationOptions
 from .models import Activity, Category, Event, Promotion
@@ -12,7 +19,7 @@ class CategoryTranslationOptions(TranslationOptions):
 
 @register(Event)
 class EventTranslationOptions(TranslationOptions):
-    fields = ('title', 'description', 'location')
+    fields = ('name', 'description', 'location')
 
 @register(Promotion)
 class PromotionTranslationOptions(TranslationOptions):
