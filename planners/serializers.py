@@ -22,8 +22,8 @@ class TripStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = TripStep
         fields = [
-            'id', 'trip_day', 'start_time', 'duration', 'end_time',
-            'activity', 'event', 'note',
+            'id', 'trip_day', 'start_time', 'estimated_duration_minutes', 'end_time',
+            'activity', 'event', 'notes',
             'activity_id', 'event_id'
         ]
 
@@ -50,10 +50,11 @@ class TripDaySerializer(serializers.ModelSerializer):
     address = serializers.CharField(write_only=True, required=True)
     latitude = serializers.FloatField(read_only=True)
     longitude = serializers.FloatField(read_only=True)
+    steps = TripStepSerializer(many=True, read_only=True)
 
     class Meta:
         model = TripDay
-        fields = ['id', 'trip', 'date', 'address', 'latitude', 'longitude']
+        fields = ['id', 'trip', 'date', 'address', 'latitude', 'longitude', 'steps']
 
     def create(self, validated_data):
         address = validated_data.pop('address')
