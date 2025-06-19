@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :texasbuddy/users/serialiser.py
+# File   :users/admin.py
 # Author : Morice
 # ---------------------------------------------------------------------------
 
@@ -9,6 +9,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from .models.user import User
+from planners.admin import TripInLine
+
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
@@ -29,3 +31,4 @@ class UserAdmin(BaseUserAdmin):
             'fields': ('email', 'password1', 'password2', 'is_staff', 'is_active')}
         ),
     )
+    inlines = [TripInLine]
