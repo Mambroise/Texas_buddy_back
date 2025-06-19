@@ -32,7 +32,9 @@ class TripListCreateView(RateLimitedAPIView, ListCreateAPIView):
 
     def get_queryset(self):
         logger.info("[TRIP_LIST] Trip list requested by user: %s", self.request.user.email)
-        return Trip.objects.filter(user=self.request.user)
+        return Trip.objects.filter(user=self.request.user).prefetch_related(
+        'days__steps'  
+    )
 
     def perform_create(self, serializer):
         trip = serializer.save(user=self.request.user)
@@ -55,5 +57,7 @@ class TripDetailView(RetrieveUpdateDestroyAPIView):
 
     def get_queryset(self):
         logger.info("[TRIP_DETAIL] Trip detail accessed by user: %s", self.request.user.email)
-        return Trip.objects.filter(user=self.request.user)
+        return Trip.objects.filter(user=self.request.user).prefetch_related(
+            'days__steps'   
+        )
 

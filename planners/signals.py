@@ -8,11 +8,13 @@
 
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
-from .models import TripDay
+from .models import TripDay,Trip
 
 @receiver([post_save, post_delete], sender=TripDay)
 def update_trip_dates(sender, instance, **kwargs):
     trip = instance.trip
+    if not Trip.objects.filter(id=trip.id).exists():
+        return
     all_days = trip.days.order_by("date")
 
     if all_days.exists():

@@ -12,9 +12,10 @@ from django.conf import settings
 class Trip(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="trips")
     title = models.CharField(max_length=255)
-    start_date = models.DateField()
-    end_date = models.DateField()
+    start_date = models.DateField(null=True,blank=True)
+    end_date = models.DateField(null=True,blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def update_dates_from_days(self):
         days = self.days.order_by('date')
