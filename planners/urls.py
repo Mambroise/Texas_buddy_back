@@ -13,7 +13,8 @@ from .views.trip_views import (
 )
 from .views.tripday_views import (
     TripDayListCreateView,
-    TripDayDetailView
+    TripDayDetailView,
+    TripDayAddressUpdateView
 )
 from .views.tripstep_views import (
     TripDaySyncView,
@@ -25,8 +26,14 @@ from .views.tripstep_views import (
 app_name = 'planners'
 
 urlpatterns = [
-    path('trips/', TripListCreateView.as_view(), name='trip-list-create'),
-    path('trips/<int:id>/', TripDetailView.as_view(), name='trip-detail'),
+    path('trips/', TripListCreateView.as_view(), name='trip-list-create'), # ok
+    path('trips/<int:id>/', TripDetailView.as_view(), name='trip-detail'), # ok
+    # TripDay views
+    # Note: This endpoint is for updating address cache, not creating TripDays
+    # It will be used by the mobile app to update address cache for a TripDay
+    path('trip-days/address-update/', TripDayAddressUpdateView.as_view(), name='tripday-address-update'), # ok
+    # TripDay CRUD operations
+    # Note: TripDays are created automatically when a Trip is created
     path('trip-days/', TripDayListCreateView.as_view(), name='tripday-list-create'),
     path('trip-days/<int:pk>/sync/', TripDaySyncView.as_view(), name='tripday-sync'),
     path('trip-days/<int:id>/', TripDayDetailView.as_view(), name='tripday-detail'),
