@@ -10,7 +10,7 @@ from rest_framework import serializers
 from .models import Trip, TripDay, TripStep
 from activities.serializers import ActivityListSerializer, EventSerializer
 from activities.models import Activity, Event
-from .services.address_service import get_or_create_address_cache
+from .services.address_service import get_or_create_address_cache_from_place_id
 
 class TripStepSerializer(serializers.ModelSerializer):
     activity = ActivityListSerializer(read_only=True)
@@ -47,30 +47,15 @@ class TripStepSerializer(serializers.ModelSerializer):
 
 
 class TripDaySerializer(serializers.ModelSerializer):
-    address = serializers.CharField(write_only=True, required=True)
-    latitude = serializers.FloatField(read_only=True)
-    longitude = serializers.FloatField(read_only=True)
+    address = serializers.CharField(source='address_cache.address', read_only=True)
+    latitude = serializers.FloatField(source='address_cache.latitude', read_only=True)
+    longitude = serializers.FloatField(source='address_cache.longitude', read_only=True)
     steps = TripStepSerializer(many=True, read_only=True)
 
     class Meta:
         model = TripDay
         fields = ['id', 'trip', 'date', 'address', 'latitude', 'longitude', 'steps']
-
-    def create(self, validated_data):
-        address = validated_data.pop('address')
-        address_cache = get_or_create_address_cache(address)
-        trip_day = TripDay.objects.create(address_cache=address_cache, **validated_data)
-        return trip_day
-
-    def update(self, instance, validated_data):
-        address = validated_data.pop('address', None)
-        if address:
-            address_cache = get_or_create_address_cache(address)
-            instance.address_cache = address_cache
-
-        instance.date = validated_data.get('date', instance.date)
-        instance.save()
-        return instance
+        
 
 class TripSerializer(serializers.ModelSerializer):
     days = TripDaySerializer(many=True, read_only=True)
@@ -82,3 +67,9 @@ class TripSerializer(serializers.ModelSerializer):
 
 class TripStepMoveSerializer(serializers.Serializer):
     start_time = serializers.TimeField()
+
+# Serializer comming from flutter for tripDay address update after lookup
+class TripDayAddressUpdateSerializer(serializers.Serializer):
+    trip_day_id = serializers.IntegerField()
+    address = serializers.CharField(max_length=512)
+    place_id = serializers.CharField(max_length=255)
