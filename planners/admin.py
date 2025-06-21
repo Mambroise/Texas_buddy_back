@@ -8,7 +8,7 @@
 
 from django.contrib import admin
 
-from .models import Trip, TripDay, TripStep
+from .models import Trip, TripDay, TripStep, AddressCache
 
 
 class TripInLine(admin.TabularInline):
@@ -46,3 +46,7 @@ class TripDayAdmin(admin.ModelAdmin):
 @admin.register(TripStep)
 class TripStepAdmin(admin.ModelAdmin):
     list_display = ('trip_day', 'activity', 'event', 'start_time')
+
+@admin.register(AddressCache)
+class AddressCacheAdmin(admin.ModelAdmin):
+    readonly_fields = ('place_id', 'address', 'latitude', 'longitude', 'created_at')
