@@ -20,13 +20,13 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Activity)
 class ActivityAdmin(admin.ModelAdmin):
-    list_display = ("name", "city", "state", "is_active")
+    list_display = ("name", "place_id", "city", "state", "is_active")
     list_filter = ("is_active", "category")
     search_fields = ("name", "city", "description")
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ("name", "start_datetime", "end_datetime", "city", "is_public")
+    list_display = ("name", "start_datetime", "end_datetime", "place_id", "city", "is_public")
     list_filter = ("is_public", "category")
     search_fields = ("name", "description", "city")
 

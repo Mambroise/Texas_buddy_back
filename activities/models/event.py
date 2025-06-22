@@ -23,6 +23,7 @@ class Event(models.Model):
     state = models.CharField(max_length=100, default="Texas")
     zip_code = models.CharField(max_length=10, blank=True)
     location = models.CharField(max_length=255, null=True,blank=True)
+    place_id = models.CharField(max_length=255, null=True, blank=True)
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     category = models.ManyToManyField(Category, related_name="events")

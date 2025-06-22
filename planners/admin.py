@@ -35,17 +35,15 @@ class TripAdmin(admin.ModelAdmin):
     search_fields = ('email', 'title',)
     inlines = [TripDayInLine]
 
-
-
 @admin.register(TripDay)
 class TripDayAdmin(admin.ModelAdmin):
     list_display = ('trip', 'date', 'address_cache')
     inlines = [TripStepInLine]
 
-
 @admin.register(TripStep)
 class TripStepAdmin(admin.ModelAdmin):
     list_display = ('trip_day', 'activity', 'event', 'start_time')
+    ordering = ('trip_day', 'start_time')
 
 @admin.register(AddressCache)
 class AddressCacheAdmin(admin.ModelAdmin):
