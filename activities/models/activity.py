@@ -21,6 +21,7 @@ class Activity(models.Model):
     state = models.CharField(max_length=100, default="Texas")
     zip_code = models.CharField(max_length=10, blank=True)
     location = models.CharField(max_length=255, null=True,blank=True)
+    place_id = models.CharField(max_length=255, null=True, blank=True)
     website = models.URLField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
