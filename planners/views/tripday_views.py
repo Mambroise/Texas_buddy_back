@@ -7,6 +7,7 @@
 
 
 import logging
+from datetime import timedelta
 from rest_framework import serializers
 from rest_framework import status, permissions
 from rest_framework.views import APIView
@@ -77,17 +78,26 @@ class TripDayDetailView(RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         trip = instance.trip
+        deleted_date = instance.date
 
         if trip.days.count() <= 1:
             logger.warning("[TRIPDAY_DELETE_BLOCKED] Attempt to delete last TripDay for trip %s by %s", trip.id, request.user.email)
             return Response(
-                {"detail": "Impossible de supprimer le dernier jour du voyage."},
+                {"detail": "Impossible to delete the last trip day."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         self.perform_destroy(instance)
 
-        # Update trip dates after deleting
+        # Cascade: décaler les jours suivants (ceux avec une date > deleted_date)
+        following_days = trip.days.filter(date__gt=deleted_date).order_by('date')
+        for day in following_days:
+            old_date = day.date
+            day.date = old_date - timedelta(days=1)
+            day.save(update_fields=['date'])
+            logger.info("[TRIPDAY_SHIFT] TripDay %s moved from %s to %s", day.id, old_date, day.date)
+
+        # Update trip dates
         trip.update_dates_from_days()
 
         logger.info("[TRIPDAY_DELETE] TripDay %s deleted by %s", instance.id, request.user.email)

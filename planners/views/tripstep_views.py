@@ -104,20 +104,28 @@ class TripDaySyncView(APIView):
 
         id_to_step = {step.id: step for step in trip_day.steps.all()}
         updated_steps = []
+        created_steps = []
 
         for step_data in steps_data:
             step_id = step_data.get("id")
-            if not step_id or step_id not in id_to_step:
-                logger.debug("[TRIPDAY_SYNC] Ignored unknown TripStep id=%s", step_id)
-                continue
+            step_data["trip_day"] = trip_day.id  # for creation
 
-            step = id_to_step[step_id]
-            serializer = TripStepSerializer(step, data=step_data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            updated_steps.append(step)
+            if step_id and step_id in id_to_step:
+                # Update existing
+                step = id_to_step[step_id]
+                serializer = TripStepSerializer(step, data=step_data, partial=True)
+                serializer.is_valid(raise_exception=True)
+                serializer.save()
+                updated_steps.append(step)
+                logger.info("[TRIPDAY_SYNC] Updated TripStep id=%s", step.id)
 
-            logger.info("[TRIPDAY_SYNC] Updated TripStep id=%s", step.id)
+            else:
+                # Create new TripStep
+                serializer = TripStepSerializer(data=step_data)
+                serializer.is_valid(raise_exception=True)
+                step = serializer.save()
+                created_steps.append(step)
+                logger.info("[TRIPDAY_SYNC] Created new TripStep id=%s", step.id)
 
         # Reorder steps with cascading adjustments
         trip_steps = trip_day.steps.order_by("start_time").all()
@@ -141,12 +149,15 @@ class TripDaySyncView(APIView):
             timeline.append(step)
 
         logger.info(
-            "[TRIPDAY_SYNC_DONE] TripDay %s synchronized by %s - %d steps updated",
-            pk, request.user.email, len(updated_steps)
+            "[TRIPDAY_SYNC_DONE] TripDay %s synchronized by %s - %d updated, %d created",
+            pk, request.user.email, len(updated_steps), len(created_steps)
         )
 
-        return Response({"message": "TripSteps updated and rearranged."}, status=status.HTTP_200_OK)
-
+        return Response({
+            "message": "TripSteps updated and rearranged.",
+            "updated": len(updated_steps),
+            "created": len(created_steps),
+        }, status=status.HTTP_200_OK)
 
 # ─── TripStep Delete View ───────────────────────────────────────────────────
 class TripStepDeleteView(RateLimitedAPIView):

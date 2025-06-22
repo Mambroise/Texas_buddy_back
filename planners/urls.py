@@ -34,9 +34,10 @@ urlpatterns = [
     path('trip-days/address-update/', TripDayAddressUpdateView.as_view(), name='tripday-address-update'), # ok
     # TripDay CRUD operations
     # Note: TripDays are created automatically when a Trip is created
-    path('trip-days/', TripDayListCreateView.as_view(), name='tripday-list-create'),
+    path('trip-days/', TripDayListCreateView.as_view(), name='tripday-list-create'), # ok create, 
     path('trip-days/<int:pk>/sync/', TripDaySyncView.as_view(), name='tripday-sync'),
-    path('trip-days/<int:id>/', TripDayDetailView.as_view(), name='tripday-detail'),
+    path('trip-days/<int:id>/', TripDayDetailView.as_view(), name='tripday-detail'), # ok delete, ok detail
+    # TripStep views
     path('trip-steps/', TripStepListCreateView.as_view(), name='tripstep-list-create'),
     path('trip-steps/<int:pk>/', TripStepDeleteView.as_view(), name='tripstep-delete'),
     path('trip-steps/<int:pk>/move/', TripStepMoveView.as_view(), name='tripstep-move'),
