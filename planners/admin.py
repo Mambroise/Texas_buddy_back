@@ -25,9 +25,8 @@ class TripDayInLine(admin.TabularInline):
 class TripStepInLine(admin.TabularInline):
     model = TripStep
     extra = 1
-    fields = ('activity', 'event', 'start_time', 'estimated_duration_minutes', 'travel_time_minutes', 'notes', 'position')
+    fields = ('activity', 'event', 'start_time', 'estimated_duration_minutes', 'travel_mode', 'travel_duration_minutes', 'travel_distance_meters', 'notes', 'position')
     readonly_fields = ('end_time',)
-
 
 @admin.register(Trip)
 class TripAdmin(admin.ModelAdmin):

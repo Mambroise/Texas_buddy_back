@@ -7,6 +7,9 @@
 
 from django.utils import timezone
 from rest_framework import generics
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
+
 from ..models import Event
 from ..serializers import EventSerializer
 from core.mixins import ListLogMixin
@@ -14,6 +17,7 @@ from core.mixins import ListLogMixin
 
 # ─── View: CurrentYearEventsList ───────────────────────────────────────────
 # Return all public events overlapping current year
+@method_decorator(ratelimit(key='ip', rate='8/m', method='GET', block=True), name='dispatch')
 class CurrentYearEventsList(ListLogMixin,generics.ListAPIView):
     serializer_class = EventSerializer
 

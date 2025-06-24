@@ -13,6 +13,8 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Func, FloatField, Q
 from django.utils import timezone
 from datetime import datetime
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
@@ -27,6 +29,7 @@ class NearbyPagination(PageNumberPagination):
 
 # ─── View: NearbyListAPIView ────────────────────────────────────────────────
 # Return nearby activities and/or events for a given position
+@method_decorator(ratelimit(key='ip', rate='20/m', method='GET', block=True), name='dispatch')
 class NearbyListAPIView(APIView):
     permission_classes = [IsAuthenticated]
 

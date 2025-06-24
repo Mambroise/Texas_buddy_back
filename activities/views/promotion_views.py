@@ -10,11 +10,14 @@ from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend
+from django.utils.decorators import method_decorator
+from django_ratelimit.decorators import ratelimit
 
 from ..models.promotion import Promotion
 from ..serializers import PromotionSerializer
 from core.mixins import ListLogMixin
 
+@method_decorator(ratelimit(key='ip', rate='10/m', method='GET', block=True), name='dispatch')
 class PromotionListAPIView(ListLogMixin,generics.ListAPIView):
     queryset = Promotion.objects.filter(
         is_active=True,
