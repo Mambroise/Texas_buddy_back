@@ -10,21 +10,21 @@ from rest_framework import serializers
 from .models import Trip, TripDay, TripStep
 from activities.serializers import ActivityListSerializer, EventSerializer
 from activities.models import Activity, Event
-from .services.address_service import get_or_create_address_cache_from_place_id
 
 class TripStepSerializer(serializers.ModelSerializer):
     activity = ActivityListSerializer(read_only=True)
     event = EventSerializer(read_only=True)
     activity_id = serializers.PrimaryKeyRelatedField(queryset=Activity.objects.all(), write_only=True, required=False)
     event_id = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), write_only=True, required=False)
-    end_time = serializers.TimeField(read_only=True)  # ← ajouté ici
+    end_time = serializers.TimeField(read_only=True)
 
     class Meta:
         model = TripStep
         fields = [
             'id', 'trip_day', 'start_time', 'estimated_duration_minutes', 'end_time',
             'activity', 'event', 'notes',
-            'activity_id', 'event_id'
+            'activity_id', 'event_id',
+            'travel_mode', 'travel_duration_minutes', 'travel_distance_meters'
         ]
 
     def create(self, validated_data):
@@ -42,6 +42,7 @@ class TripStepSerializer(serializers.ModelSerializer):
             setattr(instance, attr, value)
         instance.save()
         return instance
+
 
 
 

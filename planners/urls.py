@@ -35,58 +35,11 @@ urlpatterns = [
     # TripDay CRUD operations
     # Note: TripDays are created automatically when a Trip is created
     path('trip-days/', TripDayListCreateView.as_view(), name='tripday-list-create'), # ok create, 
-    path('trip-days/<int:pk>/sync/', TripDaySyncView.as_view(), name='tripday-sync'),
+    path('trip-days/<int:pk>/sync/', TripDaySyncView.as_view(), name='tripday-sync'), # ok sync
     path('trip-days/<int:id>/', TripDayDetailView.as_view(), name='tripday-detail'), # ok delete, ok detail
     # TripStep views
-    path('trip-steps/', TripStepListCreateView.as_view(), name='tripstep-list-create'),
-    path('trip-steps/<int:pk>/', TripStepDeleteView.as_view(), name='tripstep-delete'),
+    path('trip-steps/', TripStepListCreateView.as_view(), name='tripstep-list-create'), # ok create ok list
+    path('trip-steps/<int:pk>/', TripStepDeleteView.as_view(), name='tripstep-delete'), # ok delete
     path('trip-steps/<int:pk>/move/', TripStepMoveView.as_view(), name='tripstep-move'),
 ]
 
-"""
-Parfait. Voici l’exemple de la structure JSON attendue côté mobile lorsque l’utilisateur synchronise les TripStep d’un jour via :
-
-
-
-POST /api/planners/trip-days/<trip_day_id>/sync/
-✅ Exemple de payload envoyé depuis le mobile :
-json
-
-{
-  "steps": [
-    {
-      "id": 21,
-      "start_time": "09:00:00",
-      "duration": 90,
-      "activity_id": 5
-    },
-    {
-      "id": 22,
-      "start_time": "10:30:00",
-      "duration": 60,
-      "event_id": 12
-    },
-    {
-      "id": 23,
-      "start_time": "11:30:00",
-      "duration": 45,
-      "activity_id": 6
-    }
-  ]
-}
-🧠 Détails :
-Champ	Type	Obligatoire	Description
-id	int	✅	ID existant de la TripStep locale à mettre à jour
-start_time	HH:MM:SS	✅	Heure de début (en UTC ou locale, à standardiser)
-duration	int (minutes)	✅	Durée de l’étape
-activity_id / event_id	int	✅	Soit activity_id, soit event_id, jamais les deux
-
-🔄 Ce que fait le backend :
-Identifie chaque TripStep par id.
-
-Met à jour sa start_time, duration, et activity/event.
-
-Ignore ou rejette toute step dont l’id ne correspond pas à un TripStep du TripDay concerné et appartenant à l’utilisateur connecté.
-
-
-"""
