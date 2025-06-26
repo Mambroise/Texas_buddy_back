@@ -32,6 +32,7 @@ class Activity(models.Model):
     price = models.FloatField(blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
     staff_favorite = models.BooleanField(default=False)
+    is_unique = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------------------
+#                           TEXAS BUDDY   ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   :ads/views/ads_tracking_views.py
+# Author : Morice
+# ---------------------------------------------------------------------------
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from ads.models import Advertisement, AdImpression, AdClick, AdConversion
+from users.models import User
+
+# Optional logging or analytics service can be added later
+
+
+class TrackClickView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        ad_id = request.data.get("ad_id")
+        if not ad_id:
+            return Response({"error": "Missing ad_id"}, status=400)
+
+        ad = get_object_or_404(Advertisement, pk=ad_id)
+        user = request.user if request.user.is_authenticated else None
+
+        AdClick.objects.create(advertisement=ad, user=user)
+        ad.clicks_count += 1
+        ad.save(update_fields=["clicks_count"])
+
+        return Response({"status": "click recorded", "redirect_url": ad.link_url}, status=200)
+
+
+class TrackConversionView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        ad_id = request.data.get("ad_id")
+        details = request.data.get("details", {})
+
+        if not ad_id:
+            return Response({"error": "Missing ad_id"}, status=400)
+
+        ad = get_object_or_404(Advertisement, pk=ad_id)
+        user = request.user if request.user.is_authenticated else None
+
+        AdConversion.objects.create(advertisement=ad, user=user, details=details)
+        ad.conversions_count += 1
+        ad.save(update_fields=["conversions_count"])
+
+        return Response({"status": "conversion recorded"}, status=201)
