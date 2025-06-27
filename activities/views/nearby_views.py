@@ -18,14 +18,17 @@ from django_ratelimit.decorators import ratelimit
 
 from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
+from ads.models import Advertisement
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
+
 
 class NearbyPagination(PageNumberPagination):
     page_size = 20
     page_size_query_param = 'page_size'
     max_page_size = 100
+
 
 # ─── View: NearbyListAPIView ────────────────────────────────────────────────
 # Return nearby activities and/or events for a given position
@@ -106,6 +109,35 @@ class NearbyListAPIView(APIView):
 
             return qs
 
+        # ─── Load active advertisements ─────────────────────────────────────────
+        today = timezone.now().date()
+        ads_qs = Advertisement.objects.filter(
+            start_date__lte=today,
+            end_date__gte=today
+        ).order_by("?")[:2]  # Random order or apply your own ordering
+
+        serialized_ads = []
+        for ad in ads_qs:
+            ad_item = None
+            if ad.related_activity:
+                ad_item = ad.related_activity
+                serializer = ActivityListSerializer(ad_item, context={'request': request})
+                data = serializer.data
+                data["type"] = "activity"
+            elif ad.related_event:
+                ad_item = ad.related_event
+                serializer = EventSerializer(ad_item, context={'request': request})
+                data = serializer.data
+                data["type"] = "event"
+            else:
+                continue
+
+            data["is_advertisement"] = True
+            serialized_ads.append(data)
+
+        logger.info("[NEARBY_SEARCH] %d active advertisements prepared", len(serialized_ads))
+
+        # ─── Load nearby activities and events ──────────────────────────────────
         activity_serialized = []
         event_serialized = []
 
@@ -135,7 +167,13 @@ class NearbyListAPIView(APIView):
 
             logger.info("[NEARBY_SEARCH] %d nearby events found", len(event_serialized))
 
-        combined = activity_serialized + event_serialized
+        # ─── Combine ads + standard results ─────────────────────────────────────
+        combined = []
+        combined.extend(serialized_ads)  # Ads always first
+        combined.extend(activity_serialized)
+        combined.extend(event_serialized)
+
+        # Sort by distance if available (ads may not have distance)
         combined.sort(key=lambda x: x.get('distance', 999999))
 
         paginator = NearbyPagination()
