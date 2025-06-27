@@ -7,6 +7,8 @@
 
 
 
+from ads.models import Advertisement
+from activities.serializers import EventSerializer, ActivityDetailSerializer
 from rest_framework import serializers
 from .models import Partner, Advertisement, AdImpression, AdClick, AdConversion
 
@@ -30,11 +32,18 @@ class PartnerSerializer(serializers.ModelSerializer):
 
 # ─────────── ADVERTISEMENT ──────────────────
 
+
 class AdvertisementSerializer(serializers.ModelSerializer):
+    # Partner en lecture complète
     partner = PartnerSerializer(read_only=True)
+    # Partner ID en écriture
     partner_id = serializers.PrimaryKeyRelatedField(
         queryset=Partner.objects.all(), source='partner', write_only=True
     )
+
+    # Event et Activity en lecture complète
+    related_event_detail = EventSerializer(source="related_event", read_only=True)
+    related_activity_detail = ActivityDetailSerializer(source="related_activity", read_only=True)
 
     class Meta:
         model = Advertisement
@@ -47,6 +56,8 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "end_date",
             "related_activity",
             "related_event",
+            "related_activity_detail",  
+            "related_event_detail",     
             "cpm_price",
             "cpc_price",
             "cpa_price",
@@ -56,8 +67,9 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "conversions_count",
             "created_at",
             "partner",
-            "partner_id",  # pour POST/PUT
+            "partner_id",
         ]
+
 
 # ─────────── IMPRESSIONS / CLICS / CONVERSIONS ───────────
 
@@ -92,20 +104,4 @@ class AdConversionSerializer(serializers.ModelSerializer):
             "timestamp",
         ]
 
-class AdvertisementSerializer(serializers.ModelSerializer):
-    partner_name = serializers.CharField(source="partner.name", read_only=True)
-    type = serializers.SerializerMethodField()
 
-    class Meta:
-        model = Advertisement
-        fields = [
-            'id', 'title', 'image', 'link_url', 'format', 'partner_name',
-            'related_activity', 'related_event', 'start_date', 'end_date', 'type'
-        ]
-
-    def get_type(self, obj):
-        if obj.related_activity:
-            return "activity"
-        if obj.related_event:
-            return "event"
-        return "other"
