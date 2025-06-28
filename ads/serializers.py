@@ -34,12 +34,13 @@ class PartnerSerializer(serializers.ModelSerializer):
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):
-    # Partner en lecture complète
-    partner = PartnerSerializer(read_only=True)
+    # This commented part goes the commented fields below
+    # Partner in full display
+    # partner = PartnerSerializer(read_only=True)
     # Partner ID en écriture
-    partner_id = serializers.PrimaryKeyRelatedField(
-        queryset=Partner.objects.all(), source='partner', write_only=True
-    )
+    # partner_id = serializers.PrimaryKeyRelatedField(
+    #     queryset=Partner.objects.all(), source='partner', write_only=True
+    # )
 
     # Event et Activity en lecture complète
     related_event_detail = EventSerializer(source="related_event", read_only=True)
@@ -51,23 +52,26 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "id",
             "title",
             "image",
+            "video",
+            "video_url",
             "link_url",
             "start_date",
             "end_date",
             "related_activity",
             "related_event",
             "related_activity_detail",  
-            "related_event_detail",     
-            "cpm_price",
-            "cpc_price",
-            "cpa_price",
-            "forfait_price",
-            "impressions_count",
-            "clicks_count",
-            "conversions_count",
-            "created_at",
-            "partner",
-            "partner_id",
+            "related_event_detail",  
+            # commented parts are not needed in the advertisements    
+            # "cpm_price",
+            # "cpc_price",
+            # "cpa_price",
+            # "forfait_price",
+            # "impressions_count",
+            # "clicks_count",
+            # "conversions_count",
+            # "created_at",
+            # "partner",
+            # "partner_id",
         ]
 
 

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from math import radians, cos, sin, asin, sqrt
+from django.db.models import Q
 
 from ads.models import AdImpression, Advertisement,PriorityAd
 from ads.serializers import AdvertisementSerializer
@@ -42,12 +43,19 @@ class InterstitialAdView(APIView):
         priority_ads = (
             PriorityAd.objects
             .filter(
+                Q(
+                    advertisement__format="interstitial"
+                ) | Q(
+                    advertisement__format="video_interstitial"
+                ),
                 is_active=True,
-                advertisement__format="interstitial",
                 advertisement__start_date__lte=now().date(),
                 advertisement__end_date__gte=now().date()
             )
-            .select_related("advertisement__related_activity", "advertisement__related_event")
+            .select_related(
+                "advertisement__related_activity",
+                "advertisement__related_event"
+            )
         )
 
         closest_ad = None

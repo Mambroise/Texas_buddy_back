@@ -16,7 +16,7 @@ app_name = 'ads'
 urlpatterns = [
     path("track-click/", TrackClickView.as_view(), name="track-click"),
     path("track-conversion/", TrackConversionView.as_view(), name="track-conversion"),
-    path("interstitial/", InterstitialAdView.as_view(), name="interstitial-ad"),
-    path('push/', PushNotificationAdView.as_view(), name='push-ads'),
+    path("interstitial/", InterstitialAdView.as_view(), name="interstitial-ad"), # ok
+    path('push/', PushNotificationAdView.as_view(), name='push-ads'), # ok
     # path("recommend/", GetRecommendedAdView.as_view(), name="recommend-ad"),
 ]
