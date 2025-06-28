@@ -112,19 +112,22 @@ class NearbyListAPIView(APIView):
         # ─── Load active advertisements ─────────────────────────────────────────
         today = timezone.now().date()
         ads_qs = Advertisement.objects.filter(
+            format="native",
             start_date__lte=today,
             end_date__gte=today
         ).order_by("?")[:2]  # Random order or apply your own ordering
-
+        print("==========", ads_qs)
         serialized_ads = []
         for ad in ads_qs:
             ad_item = None
             if ad.related_activity:
+                print("in related activity")
                 ad_item = ad.related_activity
                 serializer = ActivityListSerializer(ad_item, context={'request': request})
                 data = serializer.data
                 data["type"] = "activity"
             elif ad.related_event:
+                print("in related event")
                 ad_item = ad.related_event
                 serializer = EventSerializer(ad_item, context={'request': request})
                 data = serializer.data
@@ -133,6 +136,8 @@ class NearbyListAPIView(APIView):
                 continue
 
             data["is_advertisement"] = True
+            data["distance"] = -1 # Default distance for ads without location to have them in list beginning
+            print(data)
             serialized_ads.append(data)
 
         logger.info("[NEARBY_SEARCH] %d active advertisements prepared", len(serialized_ads))
