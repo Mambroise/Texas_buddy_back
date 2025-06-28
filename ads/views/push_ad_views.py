@@ -55,24 +55,29 @@ class PushNotificationAdView(APIView):
 
             if ad.related_event:
                 evt = ad.related_event
-                if evt.is_national or evt.is_unique or evt.latitude is None or evt.longitude is None:
+                if evt.latitude is None or evt.longitude is None:
                     continue
                 dist = haversine(user_lat, user_lng, evt.latitude, evt.longitude)
-                if dist > 100:
+                if dist > 200:
                     continue
                 obj = evt
                 obj_type = "event"
-                title = evt.title
+                title = evt.name
+                extra_data = {
+                    "start_date": evt.start_datetime,
+                    "end_date": evt.end_datetime,
+             }
             elif ad.related_activity:
                 act = ad.related_activity
-                if act.latitude is None or act.longitude is None:
+                if not act.is_unique or act.latitude is None or act.longitude is None:
                     continue
                 dist = haversine(user_lat, user_lng, act.latitude, act.longitude)
-                if dist > 100:
+                if dist > 200:
                     continue
                 obj = act
                 obj_type = "activity"
                 title = act.name
+                extra_data = None
 
             if obj:
                 enriched_ads.append({
@@ -80,7 +85,8 @@ class PushNotificationAdView(APIView):
                     "distance": dist,
                     "object_type": obj_type,
                     "object_id": obj.id,
-                    "object_title": title
+                    "object_title": title,
+                    "extra_data": extra_data,
                 })
 
         # Tri par distance croissante
@@ -89,16 +95,20 @@ class PushNotificationAdView(APIView):
         # Transformation en JSON final
         response_data = []
         for item in enriched_ads:
-            response_data.append({
+            ad_dict = {
                 "id": item["ad"].id,
                 "format": item["ad"].format,
                 "title": item["ad"].title,
-                "image_url": item["ad"].image_url,
+                "image_url": item["ad"].image.url if item["ad"].image else None,
                 "distance_km": round(item["distance"], 1),
                 "object_type": item["object_type"],
                 "object_id": item["object_id"],
                 "object_title": item["object_title"],
-            })
+            }
+            if item["object_type"] == "event":
+                ad_dict["start_date"] = item["extra_data"].get("start_date")
+                ad_dict["end_date"] = item["extra_data"].get("end_date")
+            response_data.append(ad_dict)
 
         if not response_data:
             return Response({"message": "No push ads available."}, status=204)
