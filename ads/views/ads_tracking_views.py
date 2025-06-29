@@ -11,13 +11,13 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
 from django.shortcuts import get_object_or_404
-from ads.models import Advertisement, AdImpression, AdClick, AdConversion
-from users.models import User
+from ads.models import Advertisement, AdClick, AdConversion
+from core.throttles import PostRateLimitedAPIView
 
 # Optional logging or analytics service can be added later
 
 
-class TrackClickView(APIView):
+class TrackClickView(PostRateLimitedAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -35,7 +35,7 @@ class TrackClickView(APIView):
         return Response({"status": "click recorded", "redirect_url": ad.link_url}, status=200)
 
 
-class TrackConversionView(APIView):
+class TrackConversionView(PostRateLimitedAPIView):
     permission_classes = [AllowAny]
 
     def post(self, request):

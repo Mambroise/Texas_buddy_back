@@ -10,6 +10,7 @@ from django.urls import path
 from .views.ads_tracking_views import TrackClickView, TrackConversionView
 from .views.interstitial_ad_views import InterstitialAdView
 from .views.push_ad_views import PushNotificationAdView
+from .views.invoice.dashboard_views import AdsDashboardView
 # from .views.ads_recommendation import GetRecommendedAdView
 
 app_name = 'ads'
@@ -18,5 +19,6 @@ urlpatterns = [
     path("track-conversion/", TrackConversionView.as_view(), name="track-conversion"),
     path("interstitial/", InterstitialAdView.as_view(), name="interstitial-ad"), # ok
     path('push/', PushNotificationAdView.as_view(), name='push-ads'), # ok
+    path("dashboard/", AdsDashboardView.as_view(), name="ads-dashboard"),
     # path("recommend/", GetRecommendedAdView.as_view(), name="recommend-ad"),
 ]

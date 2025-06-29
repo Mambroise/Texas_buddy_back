@@ -13,8 +13,7 @@ from rest_framework.pagination import PageNumberPagination
 from django.db.models import Func, FloatField, Q
 from django.utils import timezone
 from datetime import datetime
-from django.utils.decorators import method_decorator
-from django_ratelimit.decorators import ratelimit
+from core.throttles import GetRateLimitedAPIView
 
 from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
@@ -32,8 +31,7 @@ class NearbyPagination(PageNumberPagination):
 
 # ─── View: NearbyListAPIView ────────────────────────────────────────────────
 # Return nearby activities and/or events for a given position
-@method_decorator(ratelimit(key='ip', rate='20/m', method='GET', block=True), name='dispatch')
-class NearbyListAPIView(APIView):
+class NearbyListAPIView(GetRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
@@ -116,7 +114,7 @@ class NearbyListAPIView(APIView):
             start_date__lte=today,
             end_date__gte=today
         ).order_by("?")[:2]  # Random order or apply your own ordering
-        print("==========", ads_qs)
+
         serialized_ads = []
         for ad in ads_qs:
             ad_item = None

@@ -6,11 +6,11 @@
 # ---------------------------------------------------------------------------
 
 
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from math import radians, cos, sin, asin, sqrt
+from core.throttles import GetRateLimitedAPIView
 
 from ads.models.advertisement import Advertisement
 
@@ -23,7 +23,7 @@ def haversine(lat1, lon1, lat2, lon2):
     c = 2 * asin(sqrt(a))
     return R * c
 
-class PushNotificationAdView(APIView):
+class PushNotificationAdView(GetRateLimitedAPIView):
 
     def get(self, request, *args, **kwargs):
         user_lat = request.query_params.get("lat")

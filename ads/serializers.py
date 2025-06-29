@@ -7,7 +7,7 @@
 
 
 
-from ads.models import Advertisement
+from .models import Advertisement, Partner, AdInvoice
 from activities.serializers import EventSerializer, ActivityDetailSerializer
 from rest_framework import serializers
 from .models import Partner, Advertisement, AdImpression, AdClick, AdConversion
@@ -109,3 +109,10 @@ class AdConversionSerializer(serializers.ModelSerializer):
         ]
 
 
+# invoices/serializers------------------------------------------------------------
+
+
+class InvoiceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AdInvoice
+        fields = "__all__"
