@@ -8,8 +8,10 @@
 # from django.contrib.gis.db.models.functions import Distance
 # from ..models import Advertisement
 # from ..serializers import AdvertisementSerializer
+# from core.throttles import GetRateLimitedAPIView
 
-# class GetRecommendedAdView(APIView):
+
+# class GetRecommendedAdView(GetRateLimitedAPIView):
 #     """
 #     Recommande une pub adaptée selon le contexte (type, position, validité…)
 #     """

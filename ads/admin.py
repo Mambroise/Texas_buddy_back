@@ -7,7 +7,7 @@
 
 
 from django.contrib import admin
-from .models import Partner, Advertisement, AdClick, AdImpression, AdConversion
+from .models import Partner, Advertisement, AdClick, AdImpression, AdConversion, AdInvoice
 from .models.priority_ad import PriorityAd
 
 @admin.register(Partner)
@@ -69,3 +69,36 @@ class PriorityAdAdmin(admin.ModelAdmin):
     list_display = ['advertisement', 'is_active', 'created_at']
     list_filter = ['is_active', 'created_at']
 
+# invoices/admin.py-------------------------------------------------
+
+
+@admin.register(AdInvoice)
+class InvoiceAdmin(admin.ModelAdmin):
+    list_display = (
+        "id",
+        "partner",
+        "period_start",
+        "period_end",
+        "generated_at",
+        "total_amount",
+        "tax_amount",
+        "tax_rate",
+        "currency",
+        "is_paid",
+    )
+    list_filter = (
+        "is_paid",
+        "currency",
+        "paid_at",
+    )
+    search_fields = (
+        "partner__name",
+
+    )
+    date_hierarchy = "paid_at"
+
+    actions = ["mark_as_paid"]
+
+    def mark_as_paid(self, request, queryset):
+        updated = queryset.update(status="PAID")
+        self.message_user(request, f"{updated} facture(s) marquées comme payées.")
