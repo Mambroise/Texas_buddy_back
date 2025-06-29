@@ -15,14 +15,14 @@ from django.utils.translation import gettext as _
 
 from ..serializers import UserSerializer,SetPasswordSerializer
 from ..models import User
-from .base import RateLimitedAPIView
+from core.throttles import PostRateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
 
 # ─── View: CustomerImportAPIView ───────────────────────────────────────────
 
-class CustomerImportAPIView(RateLimitedAPIView):
+class CustomerImportAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request, *args, **kwargs):
@@ -56,7 +56,7 @@ class UserProfileView(RetrieveUpdateAPIView):
         logger.info("User profile update request from: %s", request.user.email)
         return super().patch(request, *args, **kwargs)
 
-class ConfirmPasswordResetAPIView(RateLimitedAPIView):
+class ConfirmPasswordResetAPIView(PostRateLimitedAPIView):
     def post(self, request):
         logger.info("Password reset data received for: %s", request.data.get("email"))
 

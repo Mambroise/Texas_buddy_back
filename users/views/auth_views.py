@@ -16,6 +16,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from django.utils.translation import gettext as _
+from core.throttles import PostRateLimitedAPIView
 
 from users.models.twofa import TwoFACode
 from users.serializers import (TwoFACodeVerificationSerializer,
@@ -25,14 +26,13 @@ from users.serializers import (TwoFACodeVerificationSerializer,
 from ..models.user import User
 from ..service.twoFACode import generate_2fa_code
 from notifications.services.email_service import send_credentials_email
-from .base import RateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
 
 # ─── View: VerifyRegistrationAPIView ───────────────────────────────────────────
 # Method first connexion to the app, checking the registration code sent to the customer
-class VerifyRegistrationAPIView(RateLimitedAPIView):
+class VerifyRegistrationAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -65,7 +65,7 @@ class VerifyRegistrationAPIView(RateLimitedAPIView):
 
 
 # Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
-class Verify2FACodeAPIView(RateLimitedAPIView):
+class Verify2FACodeAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
     
     def post(self, request):
@@ -97,7 +97,7 @@ class Verify2FACodeAPIView(RateLimitedAPIView):
             return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
 
 # Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
-class VerifyResetPwd2FACodeAPIView(RateLimitedAPIView):
+class VerifyResetPwd2FACodeAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
     
     def post(self, request):
@@ -131,7 +131,7 @@ class VerifyResetPwd2FACodeAPIView(RateLimitedAPIView):
 
 
 # Method to set the pwd in user entity
-class SetPasswordAPIView(RateLimitedAPIView):
+class SetPasswordAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def get_client_ip(self, request):
@@ -179,7 +179,7 @@ class SetPasswordAPIView(RateLimitedAPIView):
             return Response({"detail": _("User not found.")}, status=status.HTTP_404_NOT_FOUND)
 
 
-class ResendRegistrationNumberAPIView(RateLimitedAPIView):
+class ResendRegistrationNumberAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -201,7 +201,7 @@ class ResendRegistrationNumberAPIView(RateLimitedAPIView):
                             status=status.HTTP_404_NOT_FOUND)
         
 
-class LoginAPIView(RateLimitedAPIView):
+class LoginAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
 
     def post(self, request):
@@ -232,7 +232,7 @@ class LoginAPIView(RateLimitedAPIView):
     
     
 # logged in User ask for a password reset 
-class RequestPasswordResetAPIView(RateLimitedAPIView):
+class RequestPasswordResetAPIView(PostRateLimitedAPIView):
     def post(self, request):
         logger.info("[REQUEST_PASSWORD_RESET] Incoming data for user: %s", request.user.email)
         email = request.data.get("email")
@@ -304,7 +304,7 @@ Morice utilise l'app sur son smartphone et sa tablette. Il quitte l'app sur le s
 
 
 """
-class LogoutAPIView(RateLimitedAPIView):
+class LogoutAPIView(PostRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -346,7 +346,7 @@ Par exemple, après avoir changé son mot de passe.
 Morice remarque une activité suspecte sur son compte. Depuis la page “Sécurité”,
  il appuie sur “Se déconnecter partout” → appel à /logout_all/ → tous les tokens sont invalidés.
 """
-class LogoutAllAPIView(RateLimitedAPIView):
+class LogoutAllAPIView(PostRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

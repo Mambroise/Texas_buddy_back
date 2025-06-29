@@ -5,14 +5,15 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
-from rest_framework.views import APIView
+
 from rest_framework.response import Response
 from rest_framework import status
 from django.utils.timezone import now
 from math import radians, cos, sin, asin, sqrt
 from django.db.models import Q
+from core.throttles import GetRateLimitedAPIView
 
-from ads.models import AdImpression, Advertisement,PriorityAd
+from ads.models import AdImpression,PriorityAd
 from ads.serializers import AdvertisementSerializer
 
 
@@ -28,7 +29,7 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 
-class InterstitialAdView(APIView):
+class InterstitialAdView(GetRateLimitedAPIView):
     def get(self, request, *args, **kwargs):
         user = request.user if request.user.is_authenticated else None
         user_lat = request.query_params.get("lat")
