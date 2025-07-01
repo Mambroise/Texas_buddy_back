@@ -13,8 +13,9 @@ from math import radians, cos, sin, asin, sqrt
 from django.db.models import Q
 from core.throttles import GetRateLimitedAPIView
 
-from ads.models import AdImpression,PriorityAd
+from ads.models import PriorityAd
 from ads.serializers import AdvertisementSerializer
+from ads.views.ads_tracking_views import TrackImpression
 
 
 def haversine(lat1, lon1, lat2, lon2):
@@ -30,6 +31,8 @@ def haversine(lat1, lon1, lat2, lon2):
 
 
 class InterstitialAdView(GetRateLimitedAPIView):
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+
     def get(self, request, *args, **kwargs):
         user = request.user if request.user.is_authenticated else None
         user_lat = request.query_params.get("lat")
@@ -88,9 +91,10 @@ class InterstitialAdView(GetRateLimitedAPIView):
                 min_dist = dist
                 closest_ad = ad
 
-
+        # BUSSINESS LOGIC: Track ad impressions
+        # Track ad impression if user is authenticated
         if closest_ad:
-            AdImpression.objects.create(advertisement=closest_ad, user=user)
+            TrackImpression().track_impression(advertisement=ad, user=request.user)
             return Response(AdvertisementSerializer(closest_ad).data)
 
         # Si aucun PriorityAd avec localisation

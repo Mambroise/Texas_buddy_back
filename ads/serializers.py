@@ -34,7 +34,7 @@ class PartnerSerializer(serializers.ModelSerializer):
 
 
 class AdvertisementSerializer(serializers.ModelSerializer):
-    # This commented part goes the commented fields below
+    # This commented part goes with the commented fields below
     # Partner in full display
     # partner = PartnerSerializer(read_only=True)
     # Partner ID en écriture
@@ -50,6 +50,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
         model = Advertisement
         fields = [
             "id",
+            "format",
             "title",
             "image",
             "video",
@@ -62,10 +63,6 @@ class AdvertisementSerializer(serializers.ModelSerializer):
             "related_activity_detail",  
             "related_event_detail",  
             # commented parts are not needed in the advertisements    
-            # "cpm_price",
-            # "cpc_price",
-            # "cpa_price",
-            # "forfait_price",
             # "impressions_count",
             # "clicks_count",
             # "conversions_count",

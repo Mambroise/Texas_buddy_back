@@ -26,6 +26,7 @@ class AdInvoice(models.Model):
     payment_method = models.CharField(
         max_length=50,
         blank=True,
+        
         choices=[
             ("wire_transfer", "Wire Transfer"),
             ("credit_card", "Credit Card"),

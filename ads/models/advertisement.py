@@ -9,9 +9,8 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 
-from .partner import Partner
+from .contract import Contract
 from activities.models import Activity, Event
-
 
 class Advertisement(models.Model):
     AD_FORMAT_CHOICES = [
@@ -20,11 +19,11 @@ class Advertisement(models.Model):
         ("interstitial", "Interstitial"),
         ("push", "Push Notification"),
         ("proximity", "Proximity Ad"),
-        ("video_interstitial", "Video Interstitial"),  # tu peux ajouter ça si tu veux distinguer
+        ("video_interstitial", "Video Interstitial"),
     ]
 
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name="advertisements",null=True, blank=True)
     format = models.CharField(max_length=20, choices=AD_FORMAT_CHOICES, default="native")
-    partner = models.ForeignKey(Partner, on_delete=models.CASCADE)
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="ads/", blank=True, null=True)
     video = models.FileField(upload_to="ads/videos/", blank=True, null=True)
@@ -38,10 +37,6 @@ class Advertisement(models.Model):
     related_event = models.ForeignKey(
         Event, null=True, blank=True, on_delete=models.SET_NULL, related_name="ads"
     )
-    cpm_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    cpc_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    cpa_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
-    forfait_price = models.DecimalField(max_digits=8, decimal_places=2, null=True, blank=True)
     impressions_count = models.PositiveIntegerField(default=0)
     clicks_count = models.PositiveIntegerField(default=0)
     conversions_count = models.PositiveIntegerField(default=0)
@@ -52,3 +47,6 @@ class Advertisement(models.Model):
             raise ValidationError("Une pub ne peut cibler qu'une activité OU un événement, pas les deux.")
         if self.format == "video_interstitial" and not (self.video or self.video_url):
             raise ValidationError("Une vidéo interstitielle doit avoir un fichier vidéo ou une URL.")
+
+    def __str__(self):
+        return f"{self.title} ({self.contract})"

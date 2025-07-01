@@ -8,7 +8,6 @@
 import logging
 from datetime import timedelta
 from rest_framework import serializers, status, permissions
-from rest_framework.views import APIView
 from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
@@ -19,10 +18,10 @@ from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 
 from planners.services.address_service import get_or_create_address_cache_from_place_id
-from core.mixins import ListLogMixin, CRUDLogMixin, RetrieveLogMixin
+from core.mixins import ListLogMixin, RetrieveLogMixin
 from ..models import TripDay
 from ..serializers import TripDaySerializer, TripDayAddressUpdateSerializer
-from .base import RateLimitedAPIView
+from core.throttles import  PostRateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
@@ -30,9 +29,11 @@ logger = logging.getLogger('texasbuddy')
 # ─── TripDay Views ─────────────────────────────────────────────────────────
 
 # --- LIST & CREATE : Log + RateLimit POST seulement ---
-class TripDayListCreateView(ListLogMixin, RateLimitedAPIView, ListCreateAPIView):
+@method_decorator(ratelimit(key='ip', rate='30/10m', method='GET', block=True), name='dispatch')
+class TripDayListCreateView(ListLogMixin, PostRateLimitedAPIView, ListCreateAPIView):
     serializer_class = TripDaySerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
         return TripDay.objects.filter(trip__user=self.request.user)
@@ -71,6 +72,7 @@ class TripDayDetailView(RetrieveLogMixin, RetrieveUpdateDestroyAPIView):
     serializer_class = TripDaySerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = 'id'
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
         logger.info("[TRIPDAY_DETAIL] Accessed by user: %s", self.request.user.email)
@@ -106,10 +108,9 @@ class TripDayDetailView(RetrieveLogMixin, RetrieveUpdateDestroyAPIView):
 
 
 # --- ADDRESS UPDATE : POST avec RateLimitedAPIView ---
-class TripDayAddressUpdateView(RateLimitedAPIView, APIView):
-    rate = '10/m'
-    method = 'POST'
+class TripDayAddressUpdateView(PostRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request, *args, **kwargs):
         serializer = TripDayAddressUpdateSerializer(data=request.data)

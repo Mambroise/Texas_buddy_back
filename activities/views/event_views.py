@@ -15,10 +15,11 @@ from core.mixins import RetrieveLogMixin
 
 
 # ─── View: EventDetailAPIView ──────────────────────────────────────────────
-@method_decorator(ratelimit(key='ip', rate='8/m', method='GET', block=True), name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='12/m', method='GET', block=True), name='dispatch')
 class EventDetailAPIView(RetrieveLogMixin,generics.RetrieveAPIView):
     queryset = Event.objects.prefetch_related("category", "promotions")
     serializer_class = EventSerializer
     permission_classes = [permissions.IsAuthenticated]
     lookup_field = "id"
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
