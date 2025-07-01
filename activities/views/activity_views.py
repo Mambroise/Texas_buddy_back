@@ -21,3 +21,4 @@ class ActivityDetailAPIView(RetrieveLogMixin, generics.RetrieveAPIView):
     serializer_class = ActivityDetailSerializer
     lookup_field = 'id'
     permission_classes = [IsAuthenticated]
+    throttle_classes = [] # Disable throttling for this view, as it's already rate-limited by the base class

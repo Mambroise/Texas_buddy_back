@@ -12,6 +12,7 @@ from django.conf import settings
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView,SpectacularRedocView
 from django.conf.urls.i18n import i18n_patterns
 
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 

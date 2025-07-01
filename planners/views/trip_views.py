@@ -17,15 +17,16 @@ from django_ratelimit.decorators import ratelimit
 
 from ..models import Trip
 from ..serializers import TripSerializer
-from .base import RateLimitedAPIView
 from core.mixins import ListLogMixin, CRUDLogMixin
+from core.throttles import  PostRateLimitedAPIView
 
 
 # ─── Trip Views ────────────────────────────────────────────────────────────
 
-class TripListCreateView(RateLimitedAPIView,ListLogMixin,CRUDLogMixin,ListCreateAPIView):
+class TripListCreateView(PostRateLimitedAPIView,ListLogMixin,CRUDLogMixin,ListCreateAPIView):
     serializer_class = TripSerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
         return Trip.objects.filter(user=self.request.user).prefetch_related(
@@ -44,11 +45,12 @@ class TripListCreateView(RateLimitedAPIView,ListLogMixin,CRUDLogMixin,ListCreate
 
 
 
-@method_decorator(ratelimit(key='ip', rate='8/m', method='GET', block=True), name='dispatch')
-@method_decorator(ratelimit(key='ip', rate='8/m', method='PATCH', block=True), name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='12/m', method='GET', block=True), name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='12/m', method='PATCH', block=True), name='dispatch')
 class TripDetailView(RetrieveUpdateDestroyAPIView,ListLogMixin,CRUDLogMixin):
     serializer_class = TripSerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []
     lookup_field = 'id'
 
     def get_queryset(self):

@@ -34,6 +34,7 @@ logger = logging.getLogger('texasbuddy')
 # Method first connexion to the app, checking the registration code sent to the customer
 class VerifyRegistrationAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class   
 
     def post(self, request):
         logger.info("Incoming sign_up_number verification request: %s", request.data)
@@ -67,7 +68,8 @@ class VerifyRegistrationAPIView(PostRateLimitedAPIView):
 # Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
 class Verify2FACodeAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
-    
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+
     def post(self, request):
         logger.info("[2FA_REGISTRATION] Incoming 2FACode verification request: %s", request.data)
         serializer = TwoFACodeVerificationSerializer(data=request.data)
@@ -99,7 +101,8 @@ class Verify2FACodeAPIView(PostRateLimitedAPIView):
 # Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
 class VerifyResetPwd2FACodeAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
-    
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+
     def post(self, request):
         logger.info("[2FA_RESET_PWD] Incoming 2FACode verification for user: %s", request.user.email)
         serializer = TwoFACodeVerificationSerializer(data=request.data)
@@ -133,7 +136,7 @@ class VerifyResetPwd2FACodeAPIView(PostRateLimitedAPIView):
 # Method to set the pwd in user entity
 class SetPasswordAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
-
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
     def get_client_ip(self, request):
         """Récupère l’adresse IP réelle même derrière un proxy."""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -181,6 +184,7 @@ class SetPasswordAPIView(PostRateLimitedAPIView):
 
 class ResendRegistrationNumberAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         logger.info("[RESEND_SIGN_UP_NUMBER] Incoming data for user: %s", request.user.email)
@@ -203,6 +207,7 @@ class ResendRegistrationNumberAPIView(PostRateLimitedAPIView):
 
 class LoginAPIView(PostRateLimitedAPIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -233,6 +238,9 @@ class LoginAPIView(PostRateLimitedAPIView):
     
 # logged in User ask for a password reset 
 class RequestPasswordResetAPIView(PostRateLimitedAPIView):
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+
     def post(self, request):
         logger.info("[REQUEST_PASSWORD_RESET] Incoming data for user: %s", request.user.email)
         email = request.data.get("email")
@@ -306,6 +314,7 @@ Morice utilise l'app sur son smartphone et sa tablette. Il quitte l'app sur le s
 """
 class LogoutAPIView(PostRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         try:
@@ -348,6 +357,7 @@ Morice remarque une activité suspecte sur son compte. Depuis la page “Sécuri
 """
 class LogoutAllAPIView(PostRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         user = request.user

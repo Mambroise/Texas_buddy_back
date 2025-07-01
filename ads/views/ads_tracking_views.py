@@ -6,19 +6,16 @@
 # ---------------------------------------------------------------------------
 
 
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
-from rest_framework import status
 from django.shortcuts import get_object_or_404
-from ads.models import Advertisement, AdClick, AdConversion
+from ads.models import Advertisement, AdClick, AdConversion,AdImpression
 from core.throttles import PostRateLimitedAPIView
-
-# Optional logging or analytics service can be added later
 
 
 class TrackClickView(PostRateLimitedAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         ad_id = request.data.get("ad_id")
@@ -37,6 +34,7 @@ class TrackClickView(PostRateLimitedAPIView):
 
 class TrackConversionView(PostRateLimitedAPIView):
     permission_classes = [AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
         ad_id = request.data.get("ad_id")
@@ -53,3 +51,12 @@ class TrackConversionView(PostRateLimitedAPIView):
         ad.save(update_fields=["conversions_count"])
 
         return Response({"status": "conversion recorded"}, status=201)
+    
+
+class TrackImpression():
+
+    @staticmethod
+    def track_impression(advertisement, user=None):
+        AdImpression.objects.create(advertisement=advertisement, user=user)
+        advertisement.impressions_count += 1
+        advertisement.save(update_fields=["impressions_count"])

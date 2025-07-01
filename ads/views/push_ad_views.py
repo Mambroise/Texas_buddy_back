@@ -24,7 +24,8 @@ def haversine(lat1, lon1, lat2, lon2):
     return R * c
 
 class PushNotificationAdView(GetRateLimitedAPIView):
-
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class   
+    
     def get(self, request, *args, **kwargs):
         user_lat = request.query_params.get("lat")
         user_lng = request.query_params.get("lng")
@@ -77,7 +78,7 @@ class PushNotificationAdView(GetRateLimitedAPIView):
                 obj = act
                 obj_type = "activity"
                 title = act.name
-                extra_data = None
+                extra_data = {}
 
             if obj:
                 enriched_ads.append({

@@ -1,0 +1,8 @@
+<!-- Adding go to business button in django admin advertisement template (this goes along with advertisement admin change_list part) -->
+
+{% extends "admin/change_list.html" %}
+
+{% block object-tools %}
+  {{ block.super }}
+  {{ custom_button|safe }}
+{% endblock %}

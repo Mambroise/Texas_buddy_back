@@ -16,6 +16,7 @@
 #     Recommande une pub adaptée selon le contexte (type, position, validité…)
 #     """
 #     permission_classes = []  # Public
+#     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
 #     def get(self, request):
 #         ad_type = request.query_params.get("ad_type")  # e.g., "NATIVE"

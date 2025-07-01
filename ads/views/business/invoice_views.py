@@ -6,8 +6,6 @@
 # ---------------------------------------------------------------------------
 
 
-# ads/views/invoice_views.py
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.utils.dateparse import parse_date

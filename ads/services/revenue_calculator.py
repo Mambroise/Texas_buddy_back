@@ -5,17 +5,14 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
-# ads/services/revenue_calculator.py
 
 from decimal import Decimal
-from django.db.models import Count
-from ads.models import Advertisement, AdImpression, AdClick, AdConversion
+from ads.models import AdImpression, AdClick, AdConversion
 
 def compute_ad_revenue(advertisement, start_date, end_date):
     """
-    Calcule le revenu d'une publicité selon son modèle de contrat.
+    Calcule le revenu d'une publicité selon son contrat.
     """
-    # Filtrer les logs
     impressions = AdImpression.objects.filter(
         advertisement=advertisement,
         timestamp__date__gte=start_date,
@@ -36,22 +33,31 @@ def compute_ad_revenue(advertisement, start_date, end_date):
 
     revenue = Decimal("0.00")
 
-    contract_type = advertisement.partner.contract_type
+    contract = advertisement.contract
 
-    if contract_type == "CPM" and advertisement.cpm_price:
-        # CPM = coût pour mille impressions
-        revenue = (Decimal(impressions) / Decimal(1000)) * advertisement.cpm_price
-    elif contract_type == "CPC" and advertisement.cpc_price:
-        revenue = Decimal(clicks) * advertisement.cpc_price
-    elif contract_type == "CPA" and advertisement.cpa_price:
-        revenue = Decimal(conversions) * advertisement.cpa_price
-    elif contract_type == "FORFAIT" and advertisement.forfait_price:
-        # Forfait = prix fixe sur la période
-        revenue = advertisement.forfait_price
+    if not contract:
+        # Pas de contrat = pas de revenu calculable
+        return {
+            "impressions": impressions,
+            "clicks": clicks,
+            "conversions": conversions,
+            "revenue": revenue
+        }
+
+    contract_type = contract.campaign_type
+
+    if contract_type == "CPM" and contract.cpm_price:
+        revenue = (Decimal(impressions) / Decimal(1000)) * contract.cpm_price
+    elif contract_type == "CPC" and contract.cpc_price:
+        revenue = Decimal(clicks) * contract.cpc_price
+    elif contract_type == "CPA" and contract.cpa_price:
+        revenue = Decimal(conversions) * contract.cpa_price
+    elif contract_type == "FORFAIT" and contract.forfait_price:
+        revenue = contract.forfait_price
     elif contract_type == "PACK":
-        # Ex. tarif pack premium (imaginons que tu définisses un prix pack)
-        revenue = advertisement.forfait_price or Decimal("0.00")
-    
+        # Exemple: pack = forfait (ou 0 si non renseigné)
+        revenue = contract.forfait_price or Decimal("0.00")
+
     return {
         "impressions": impressions,
         "clicks": clicks,

@@ -17,9 +17,10 @@ from core.mixins import ListLogMixin
 
 # ─── View: CurrentYearEventsList ───────────────────────────────────────────
 # Return all public events overlapping current year
-@method_decorator(ratelimit(key='ip', rate='8/m', method='GET', block=True), name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='12/m', method='GET', block=True), name='dispatch')
 class CurrentYearEventsList(ListLogMixin,generics.ListAPIView):
     serializer_class = EventSerializer
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
         now = timezone.now()
