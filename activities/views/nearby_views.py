@@ -18,6 +18,7 @@ from core.throttles import GetRateLimitedAPIView
 from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
 from ads.models import Advertisement
+from ads.views.ads_tracking_views import TrackImpression
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
@@ -33,6 +34,7 @@ class NearbyPagination(PageNumberPagination):
 # Return nearby activities and/or events for a given position
 class NearbyListAPIView(GetRateLimitedAPIView):
     permission_classes = [IsAuthenticated]
+    throttle_classes = [] # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get(self, request, *args, **kwargs):
         lat = request.query_params.get("lat")
@@ -119,13 +121,11 @@ class NearbyListAPIView(GetRateLimitedAPIView):
         for ad in ads_qs:
             ad_item = None
             if ad.related_activity:
-                print("in related activity")
                 ad_item = ad.related_activity
                 serializer = ActivityListSerializer(ad_item, context={'request': request})
                 data = serializer.data
                 data["type"] = "activity"
             elif ad.related_event:
-                print("in related event")
                 ad_item = ad.related_event
                 serializer = EventSerializer(ad_item, context={'request': request})
                 data = serializer.data
@@ -135,8 +135,14 @@ class NearbyListAPIView(GetRateLimitedAPIView):
 
             data["is_advertisement"] = True
             data["distance"] = -1 # Default distance for ads without location to have them in list beginning
-            print(data)
+            
             serialized_ads.append(data)
+
+            # BUSINESS LOGIC: Track ad impressions
+            # Track ad impression if user is authenticated
+            if ad:
+                TrackImpression().track_impression(advertisement=ad, user=request.user)
+                
 
         logger.info("[NEARBY_SEARCH] %d active advertisements prepared", len(serialized_ads))
 

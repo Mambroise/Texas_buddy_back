@@ -20,16 +20,17 @@ from django.utils.translation import gettext as _
 
 from ..models import TripStep, TripDay
 from ..serializers import TripStepSerializer, TripStepMoveSerializer
-from .base import RateLimitedAPIView
+from core.throttles import PatchRateLimitedAPIView,GetRateLimitedAPIView,DeleteRateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
 logger = logging.getLogger('texasbuddy')
 
 
 # ─── TripStep List & Create View ────────────────────────────────────────────
-class TripStepListCreateView(ListLogMixin, RateLimitedAPIView, ListCreateAPIView):
+class TripStepListCreateView(ListLogMixin, GetRateLimitedAPIView, ListCreateAPIView):
     serializer_class = TripStepSerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
         return TripStep.objects.filter(trip_day__trip__user=self.request.user)
@@ -37,9 +38,9 @@ class TripStepListCreateView(ListLogMixin, RateLimitedAPIView, ListCreateAPIView
 
 
 # ─── TripStep Move View ─────────────────────────────────────────────────────
-@method_decorator(ratelimit(key='ip', rate='8/m', method='PATCH', block=True), name='dispatch')
-class TripStepMoveView(RateLimitedAPIView):
+class TripStepMoveView(PatchRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def patch(self, request, pk):
         try:
@@ -203,7 +204,7 @@ class TripDaySyncView(APIView):
 
 
 # ─── TripStep Delete View ───────────────────────────────────────────────────
-class TripStepDeleteView(CRUDLogMixin, RateLimitedAPIView):
+class TripStepDeleteView(CRUDLogMixin, DeleteRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def delete(self, request, pk):

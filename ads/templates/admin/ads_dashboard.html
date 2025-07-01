@@ -1,0 +1,67 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Dashboard Publicité</h1>
+
+<form method="get" style="margin-bottom:20px;">
+    <label>Contrat:
+        <select name="contract">
+            <option value="">Tous</option>
+            {% for contract in contracts %}
+            <option value="{{ contract.id }}" {% if contract.id|stringformat:"s" == request.GET.contract %}selected{% endif %}>
+                {{ contract }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Publicité:
+        <select name="advertisement">
+            <option value="">Toutes</option>
+            {% for ad in ads %}
+            <option value="{{ ad.id }}" {% if ad.id|stringformat:"s" == request.GET.advertisement %}selected{% endif %}>
+                {{ ad.title }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Du:
+        <input type="date" name="start_date" value="{{ start_date }}">
+    </label>
+    <label>Au:
+        <input type="date" name="end_date" value="{{ end_date }}">
+    </label>
+    <button type="submit">Filtrer</button>
+</form>
+
+<table border="1" cellspacing="0" cellpadding="4">
+    <thead>
+        <tr>
+            <th>Publicité</th>
+            <th>Partenaire</th>
+            <th>Contrat</th>
+            <th>Impressions</th>
+            <th>Clics</th>
+            <th>Conversions</th>
+            <th>Revenu (€)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in dashboard_data %}
+        <tr>
+            <td>{{ item.ad.title }}</td>
+            <td>{{ item.ad.contract.partner.name }}</td>
+            <td>{{ item.ad.contract }}</td>
+            <td>{{ item.stats.impressions }}</td>
+            <td>{{ item.stats.clicks }}</td>
+            <td>{{ item.stats.conversions }}</td>
+            <td>{{ item.stats.revenue|floatformat:2 }}</td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="6" style="text-align:right;"><strong>Total Revenu:</strong></td>
+            <td><strong>{{ total_revenue|floatformat:2 }} €</strong></td>
+        </tr>
+    </tbody>
+</table>
+{% endblock %}
