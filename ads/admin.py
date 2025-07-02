@@ -26,6 +26,9 @@ from .services.revenue_calculator import compute_ad_revenue
 from .models.ads_types import AdImpression, AdClick, AdConversion
 
 
+admin.site.site_header = "Texas Buddy Administration"
+admin.site.site_title = "Texas Buddy Admin"
+admin.site.index_title = "Welcome to Texas Buddy Admin Panel"
 
 @admin.register(Partner)
 class PartnerAdmin(admin.ModelAdmin):
@@ -37,9 +40,10 @@ class PartnerAdmin(admin.ModelAdmin):
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
     list_display = (
-        "partner", "campaign_type", "start_date", "duration_months",
-        "signed_date","cpm_price", "cpc_price", "cpa_price", "forfait_price", "is_active"
+        "partner", "contract_reference", "campaign_type", "start_date", "duration_months",
+        "signed_date", "cpm_price", "cpc_price", "cpa_price", "forfait_price", "is_active"
     )
+    readonly_fields = ("contract_reference",)
     list_filter = ("campaign_type", "is_active")
     search_fields = ("partner__name",)
     date_hierarchy = "start_date"
@@ -120,11 +124,12 @@ class PriorityAdAdmin(admin.ModelAdmin):
 @admin.register(AdInvoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = (
-        "id", "partner", "period_start", "period_end",
+        "id", "reference", "advertisement", "period_start", "period_end",
         "generated_at", "total_amount", "tax_amount", "tax_rate", "currency", "is_paid"
     )
-    list_filter = ("is_paid", "currency", "paid_at")
-    search_fields = ("partner__name",)
+    readonly_fields = ("reference",)
+    list_filter = ("is_paid", "paid_at")
+    search_fields = ("advertisement__contract__partner__name", "advertisement__title")
     date_hierarchy = "paid_at"
     actions = ["mark_as_paid"]
 
