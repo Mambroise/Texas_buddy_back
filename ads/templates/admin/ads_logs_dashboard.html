@@ -1,0 +1,114 @@
+<!-- # ---------------------------------------------------------------------------
+#                           TEXAS BUDDY   ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   :ads/templates/admin/ads_logs_dashboard.py
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<h1>Logs Publicitaires</h1>
+<div style="margin: 20px;">
+
+    <a href="{% url 'ads:export_ads_logs_csv' %}?{{ query_string }}" class="btn btn-success">
+        📄 Télécharger CSV
+    </a>
+    <a href="{% url 'ads:export_ads_logs_pdf' %}?{{ query_string }}" class="btn btn-danger">
+        📝 Télécharger PDF
+    </a>
+</div>
+
+
+
+<form method="get" style="margin-bottom:20px;">
+    <label>Type de Log:
+        <select name="log_type">
+            <option value="">Tous</option>
+            <option value="impression" {% if log_type == "impression" %}selected{% endif %}>Impression</option>
+            <option value="click" {% if log_type == "click" %}selected{% endif %}>Clic</option>
+            <option value="conversion" {% if log_type == "conversion" %}selected{% endif %}>Conversion</option>
+        </select>
+    </label>
+    <label>Partenaire:
+        <select name="partner">
+            <option value="">Tous</option>
+            {% for partner in partners %}
+            <option value="{{ partner.id }}" {% if partner.id|stringformat:"s" == request.GET.partner %}selected{% endif %}>
+                {{ partner.name }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Contrat:
+        <select name="contract">
+            <option value="">Tous</option>
+            {% for contract in contracts %}
+            <option value="{{ contract.id }}" {% if contract.id|stringformat:"s" == request.GET.contract %}selected{% endif %}>
+                {{ contract }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Publicité:
+        <select name="advertisement">
+            <option value="">Toutes</option>
+            {% for ad in advertisements %}
+            <option value="{{ ad.id }}" {% if ad.id|stringformat:"s" == request.GET.advertisement %}selected{% endif %}>
+                {{ ad.title }}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>Du:
+        <input type="date" name="start_date" value="{{ start_date }}">
+    </label>
+    <label>Au:
+        <input type="date" name="end_date" value="{{ end_date }}">
+    </label>
+    <button type="submit">Filtrer</button>
+</form>
+
+<table border="1" cellspacing="0" cellpadding="4">
+    <thead>
+        <tr>
+            <th>Type</th>
+            <th>Date</th>
+            <th>Publicité</th>
+            <th>Partenaire</th>
+            <th>Contrat</th>
+            <th>ID utilisateur</th>
+            <th>Détails</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for log in logs %}
+        <tr>
+            <td>{{ log.log_type|capfirst }}</td>
+            <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
+            <td>{{ log.advertisement.title }}</td>
+            <td>{{ log.advertisement.contract.partner.name }}</td>
+            <td>{{ log.advertisement.contract.contract_reference }}</td>
+            <td>
+                {% if log.user %}
+                    {{ log.user.id }}
+                {% else %}
+                    Utilisateur inconnu
+                {% endif %}
+            </td>
+            <td>
+                {% if log.log_type == "conversion" %}
+                    <pre>{{ log.details|safe }}</pre>
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7">Aucun log trouvé.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

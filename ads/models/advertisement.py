@@ -1,11 +1,3 @@
-# ---------------------------------------------------------------------------
-#                           TEXAS BUDDY   ( 2 0 2 5 )
-# ---------------------------------------------------------------------------
-# File   :ads/models/advertisement.py
-# Author : Morice
-# ---------------------------------------------------------------------------
-
-
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -22,7 +14,9 @@ class Advertisement(models.Model):
         ("video_interstitial", "Video Interstitial"),
     ]
 
-    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name="advertisements",null=True, blank=True)
+    contract = models.ForeignKey(
+        Contract, on_delete=models.CASCADE, related_name="advertisements", null=True, blank=True
+    )
     format = models.CharField(max_length=20, choices=AD_FORMAT_CHOICES, default="native")
     title = models.CharField(max_length=255)
     image = models.ImageField(upload_to="ads/", blank=True, null=True)
@@ -43,10 +37,38 @@ class Advertisement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def clean(self):
+        errors = {}
+
+        # Only one target: either an activity or an event
         if self.related_activity and self.related_event:
-            raise ValidationError("Une pub ne peut cibler qu'une activité OU un événement, pas les deux.")
+            errors["related_activity"] = "An advertisement can target either an activity or an event, not both."
+            errors["related_event"] = "An advertisement can target either an activity or an event, not both."
+
+        # Video is mandatory for video interstitial format
         if self.format == "video_interstitial" and not (self.video or self.video_url):
-            raise ValidationError("Une vidéo interstitielle doit avoir un fichier vidéo ou une URL.")
+            errors["video"] = "A video interstitial must have either a video file or a video URL."
+            errors["video_url"] = "A video interstitial must have either a video file or a video URL."
+
+        # Start and end dates consistency
+        if self.start_date and self.end_date and self.start_date > self.end_date:
+            errors["end_date"] = "End date must be later than start date."
+
+        # Contract period validation (if a contract is attached)
+        if self.contract:
+            contract_start = self.contract.start_date
+            contract_end = self.contract.end_date
+            if self.start_date < contract_start:
+                errors["start_date"] = f"Start date cannot be earlier than the contract start date ({contract_start})."
+            if self.end_date > contract_end:
+                errors["end_date"] = f"End date cannot be later than the contract end date ({contract_end})."
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
         return f"{self.title} ({self.contract})"
+
+    def save(self, *args, **kwargs):
+        # Enforce validation on save
+        self.full_clean()
+        super().save(*args, **kwargs)
