@@ -6,7 +6,6 @@
 # ---------------------------------------------------------------------------
 
 
-
 from .models import Advertisement, Partner, AdInvoice
 from activities.serializers import EventSerializer, ActivityDetailSerializer
 from rest_framework import serializers

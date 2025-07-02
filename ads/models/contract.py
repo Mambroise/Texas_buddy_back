@@ -8,6 +8,7 @@
 
 from django.db import models
 from .partner import Partner
+from ..services.contract_reference import generate_contract_reference
 
 class Contract(models.Model):
     CAMPAIGN_TYPE_CHOICES = [
@@ -38,3 +39,9 @@ class Contract(models.Model):
 
     def __str__(self):
         return f"{self.contract_reference} ({self.partner.name})"
+    
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.contract_reference:
+            self.contract_reference = generate_contract_reference()
+        super().save(*args, **kwargs)
+

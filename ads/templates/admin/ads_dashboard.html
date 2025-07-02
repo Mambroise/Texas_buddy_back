@@ -1,7 +1,18 @@
+<!-- # ---------------------------------------------------------------------------
+#                           TEXAS BUDDY   ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   :ads/templates/admin/ads_dashboard.py
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
 {% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block content %}
+<p>
+    <a href="{% url 'ads:ads_logs_dashboard' %}" class="button default">Voir les logs publicitaires</a>
+</p>
 <h1>Dashboard Publicité</h1>
 
 <form method="get" style="margin-bottom:20px;">
