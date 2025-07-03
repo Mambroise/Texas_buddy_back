@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :ads/views/admin_dashboard_views.py
+# File   :ads/views/dashboard_views.py
 # Author : Morice
 # ---------------------------------------------------------------------------
 
@@ -10,15 +10,19 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
 from django.utils import timezone
 from datetime import datetime
-from ads.models import Advertisement, Contract
+
+
+from ads.models import Advertisement, Contract,AdInvoice
 from ads.services.revenue_calculator import compute_ad_revenue
+from django.utils.dateparse import parse_date
+
 
 
 @staff_member_required
 def ads_dashboard(request):
-    """
-    Vue Dashboard des publicités accessible uniquement aux admins/staff.
-    """
+    
+    # Vue Dashboard des publicités accessible uniquement aux admins/staff.
+
     contract_id = request.GET.get("contract")
     advertisement_id = request.GET.get("advertisement")
     start_date = request.GET.get("start_date")
@@ -69,3 +73,4 @@ def ads_dashboard(request):
         "request": request,  # Pour le template
     }
     return render(request, "admin/ads_dashboard.html", context)
+

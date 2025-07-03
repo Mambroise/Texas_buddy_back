@@ -1,0 +1,26 @@
+<!-- # ---------------------------------------------------------------------------
+#                     T e x a s  B u d d y  ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   : ads/templates/admin/email/invoice_email.html
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+{% extends 'email_base.html' %}
+
+{% load i18n %}
+{% load static %}
+
+{% block content %}
+<h2>{% trans "Your Texas Buddy Invoice" %}</h2>
+<p>{% trans "Hello" %} {{ invoice.advertisement.contract.partner.name }},</p>
+<p>{% trans "Please find attached your invoice." %}</p>
+<p>{% trans "for period:" %} {{ invoice.period_start|date:"SHORT_DATE_FORMAT" }} - {{ invoice.period_end|date:"SHORT_DATE_FORMAT" }}</p>
+
+<h3>{% trans "Invoice No." %} {{ invoice.reference }}</h3>
+<p>{% trans "Date:" %} {{ invoice.generated_at|date:"SHORT_DATE_FORMAT" }}</p>
+<p>{% trans "Total (incl. tax):" %} {{ invoice.total_amount }}</p>
+
+
+<p>{% trans "Thank you for trusting Texas Buddy." %}</p>
+{% endblock %}
