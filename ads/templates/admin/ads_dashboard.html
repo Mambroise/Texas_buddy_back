@@ -55,6 +55,7 @@
             <th>Clics</th>
             <th>Conversions</th>
             <th>Revenu (€)</th>
+            <th>Facture</th>
         </tr>
     </thead>
     <tbody>
@@ -67,6 +68,11 @@
             <td>{{ item.stats.clicks }}</td>
             <td>{{ item.stats.conversions }}</td>
             <td>{{ item.stats.revenue|floatformat:2 }}</td>
+            <td>
+                <a href="{% url 'ads:generate_invoice' item.ad.id %}?start_date={{ start_date }}&end_date={{ end_date }}" class="button default">
+                    Générer
+                </a>
+            </td>
         </tr>
         {% endfor %}
         <tr>

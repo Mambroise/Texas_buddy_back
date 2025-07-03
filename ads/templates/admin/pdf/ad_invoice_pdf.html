@@ -1,0 +1,180 @@
+<!-- # ---------------------------------------------------------------------------
+#                     T e x a s  B u d d y  ( 2 0 2 5 )
+# ---------------------------------------------------------------------------
+# File   : ads/templates/admin/pdf/ad_invoice_pdf.html
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      font-size: 12px;
+      color: #333;
+    }
+    .header, .footer {
+      text-align: center;
+    }
+    .company-info, .partner-info {
+      width: 48%;
+      display: inline-block;
+      vertical-align: top;
+    }
+    .invoice-title {
+      text-align: center;
+      font-size: 18px;
+      margin: 20px 0;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #999;
+      padding: 6px;
+      text-align: left;
+    }
+    th {
+      background-color: #eee;
+    }
+    .totals {
+      margin-top: 20px;
+      width: 100%;
+    }
+    .totals td {
+      border: none;
+      padding: 4px;
+    }
+    .logo {
+      max-height: 60px;
+      margin-bottom: 10px;
+    }
+    .legal {
+      font-size: 10px;
+      margin-top: 30px;
+      text-align: center;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    {% if company_info.logo_url %}
+      <img src="{{ company_info.logo_url }}" alt="Logo" class="logo">
+    {% endif %}
+    <div><strong>{{ company_info.name }}</strong></div>
+    <div>{{ company_info.address }}</div>
+    <div>{{ company_info.zipcode }} {{ company_info.city }}</div>
+    <div>{{ company_info.country }}</div>
+    <div>Email: {{ company_info.email }} | Tel: {{ company_info.phone }}</div>
+    {% if company_info.vat_number %}
+      <div>VAT: {{ company_info.vat_number }}</div>
+    {% endif %}
+  </div>
+
+  <div class="invoice-title">
+    Invoice #{{ invoice.reference }}
+  </div>
+
+  <table>
+    <tr>
+      <td><strong>Invoice Date:</strong></td>
+      <td>{{ invoice.generated_at|date:"Y-m-d" }}</td>
+    </tr>
+    <tr>
+      <td><strong>Due Date:</strong></td>
+      <td>{{ invoice.due_date|date:"Y-m-d" }}</td>
+    </tr>
+    <tr>
+      <td><strong>Client:</strong></td>
+      <td>
+        {{ invoice.advertisement.contract.partner.name }}<br>
+        {{ invoice.advertisement.contract.partner.address }}<br>
+        {{ invoice.advertisement.contract.partner.zipcode }}
+        {{ invoice.advertisement.contract.partner.city }}<br>
+        {{ invoice.advertisement.contract.partner.state }}
+        {{ invoice.advertisement.contract.partner.country }}<br>
+        Email: {{ invoice.advertisement.contract.partner.contact_email }}
+      </td>
+    </tr>
+  </table>
+
+<table>
+  <thead>
+    <tr>
+      <th>Campaign Type</th>
+      <th>Count</th>
+      <th>Unit Price ({{ invoice.currency }})</th>
+      <th>Line Total ({{ invoice.currency }})</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for line in line_items %}
+    <tr>
+      <td>{{ line.label }}</td>
+      <td>
+        {% if line.count > 0 %}
+          {{ line.count }}
+        {% else %}
+          &ndash;
+        {% endif %}
+      </td>
+      <td>
+        {% if line.unit_price > 0 %}
+          {{ line.unit_price|floatformat:2 }}
+        {% else %}
+          &ndash;
+        {% endif %}
+      </td>
+      <td>
+        {% if line.line_total > 0 %}
+          {{ line.line_total|floatformat:2 }}
+        {% else %}
+          &ndash;
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+  <table class="totals">
+      {% if invoice.tax_rate and invoice.tax_rate|floatformat > 0 %}
+    <tr>
+      <td style="width:80%; text-align:right;"><strong>Subtotal (Excl. Tax):</strong></td>
+      <td>{{ invoice.total_amount|floatformat:2 }} {{ invoice.currency }}</td>
+    </tr>
+      <tr>
+        <td style="text-align:right;"><strong>Sales Tax ({{ invoice.tax_rate }}%):</strong></td>
+        <td>{{ invoice.tax_amount|floatformat:2 }} {{ invoice.currency }}</td>
+      </tr>
+      {% else %}
+      <tr>
+          <td colspan="2" class="legal">
+              No sales tax applicable – Texas Tax Code Section 293.025
+            </td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align:right; font-weight:bold; font-size: 1.5rem;">Total (Incl. Tax):</td>
+          <td style="font-weight:bold; font-size: 1.5rem;">{{ invoice.total_amount|floatformat:2 }} {{ invoice.currency }}</td>
+        </tr>
+  </table>
+
+  <div class="footer">
+    <p>
+      Thank you for your business.<br>
+      {% if company_info.legal_notice %}
+        <em>{{ company_info.legal_notice }}</em>
+      {% endif %}
+    </p>
+  </div>
+</body>
+</html>
