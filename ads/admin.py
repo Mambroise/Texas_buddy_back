@@ -11,19 +11,17 @@ from django.contrib import admin
 from .models import (
     Partner, Advertisement, AdClick, AdImpression, AdConversion, AdInvoice, Contract
 )
+from django.contrib import messages
 from .models.priority_ad import PriorityAd
-from django.urls import path
-from django.template.response import TemplateResponse
-from django.utils.decorators import method_decorator
-from django.contrib.admin.views.decorators import staff_member_required
 from django.urls import reverse
 from django.utils.html import format_html
 from django.db.models import Q
 
 
 from .models import Advertisement, Contract
-from .services.revenue_calculator import compute_ad_revenue
 from .models.ads_types import AdImpression, AdClick, AdConversion
+from notifications.services.email_service import send_invoice_email
+
 
 
 admin.site.site_header = "Texas Buddy Administration"
@@ -128,13 +126,22 @@ class InvoiceAdmin(admin.ModelAdmin):
         "generated_at", "total_amount", "tax_amount", "tax_rate", "currency", "is_paid"
     )
     readonly_fields = ("reference",)
-    list_filter = ("is_paid", "paid_at")
+    list_filter = ("advertisement", "is_paid", "paid_at")
     search_fields = ("advertisement__contract__partner__name", "advertisement__title")
     date_hierarchy = "paid_at"
-    actions = ["mark_as_paid"]
+    actions = ["send_invoice_to_partner"]
 
-    def mark_as_paid(self, request, queryset):
-        updated = queryset.update(is_paid=True, paid_at=datetime.now())
-        self.message_user(request, f"{updated} facture(s) marquées comme payées.")
+    def send_invoice_to_partner(modeladmin, request, queryset):
+        success_count = 0
+        failure_count = 0
+        for invoice in queryset:
+            if send_invoice_email(invoice):
+                success_count += 1
+            else:
+                failure_count += 1
+        if success_count:
+            messages.success(request, f"{success_count} facture(s) envoyée(s) avec succès.")
+        if failure_count:
+            messages.error(request, f"Erreur lors de l'envoi de {failure_count} facture(s).")
 
 
