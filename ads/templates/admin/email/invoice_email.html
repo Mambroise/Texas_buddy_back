@@ -6,21 +6,47 @@
 # --------------------------------------------------------------------------- -->
 
 
-{% extends 'base_email.html' %}
+{% extends 'email_base.html' %}
 
 {% load i18n %}
 {% load static %}
 
 {% block content %}
 <h2>{% trans "Your Texas Buddy Invoice" %}</h2>
-<p>{% trans "Hello" %} {{ invoice.advertisement.contract.partner.name }},</p>
-<p>{% trans "Please find attached your invoice." %}</p>
-<p>{% trans "for period:" %} {{ invoice.period_start|date:"SHORT_DATE_FORMAT" }} - {{ invoice.period_end|date:"SHORT_DATE_FORMAT" }}</p>
+<hr style="background-color: white; height: 1px; border: none;">
+<div class="container">
+    <h3 style="text-align: center;">{% trans "Dear" %} {{ invoice.advertisement.contract.partner.legal_name }},</h3>
+    <p>{% trans "Please find attached your invoice for contract:" %} {{ invoice.advertisement.contract.contract_reference }}.</p>
+    <p>{% trans "Period:" %} {{ invoice.period_start|date:"SHORT_DATE_FORMAT" }} - {{ invoice.period_end|date:"SHORT_DATE_FORMAT" }}</p>
+    
+    <h3>{% trans "Invoice No." %} {{ invoice.reference }}</h3>
+    <p>{% trans "Date of issue:" %} {{ invoice.generated_at|date:"SHORT_DATE_FORMAT" }}</p>
 
-<h3>{% trans "Invoice No." %} {{ invoice.reference }}</h3>
-<p>{% trans "Date:" %} {{ invoice.generated_at|date:"SHORT_DATE_FORMAT" }}</p>
-<p>{% trans "Total (incl. tax):" %} {{ invoice.total_amount }}</p>
+    <table class="totals">
+      {% if invoice.tax_rate and invoice.tax_rate|floatformat > 0 %}
+    <tr>
+      <td style="width:80%; text-align:center;"><strong>Subtotal (Excl. Tax):</strong></td>
+      <td>{{ invoice.total_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
+    </tr>
+      <tr>
+        <td style="text-align:center;"><strong>Sales Tax ({{ invoice.tax_rate }}%):</strong></td>
+        <td>{{ invoice.tax_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
+      </tr>
+      {% else %}
+      <tr>
+          <td colspan="2" class="legal">
+              No sales tax applicable – Texas Tax Code Section 293.025
+            </td>
+        </tr>
+        {% endif %}
+        <tr>
+          <td style="text-align:center; font-weight:bold; font-size: 1.5rem;">Total (Incl. Tax):</td>
+          <td style="font-weight:bold; font-size: 1.5rem;">{{ invoice.total_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
+        </tr>
+  </table>
 
 
-<p>{% trans "Thank you for trusting Texas Buddy." %}</p>
+    <p>{% trans "Thank you for your attention to the payment deadline indicated on the invoice." %}</p>
+    <p>{% trans "See you soon on Texas Buddy." %}</p>
+</div>
 {% endblock %}

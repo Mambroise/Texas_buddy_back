@@ -6,6 +6,7 @@
 # ---------------------------------------------------------------------------
 
 
+from decimal import Decimal
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render
 from django.utils import timezone
@@ -20,7 +21,6 @@ from django.utils.dateparse import parse_date
 
 @staff_member_required
 def ads_dashboard(request):
-    
     # Vue Dashboard des publicités accessible uniquement aux admins/staff.
 
     contract_id = request.GET.get("contract")
@@ -51,6 +51,7 @@ def ads_dashboard(request):
     total_revenue = 0
 
     for ad in ads_qs:
+        # IMPORTANT : compute_ad_revenue retourne déjà tous les sous-totaux
         stats = compute_ad_revenue(ad, start_date, end_date)
         total_revenue += stats["revenue"]
 
@@ -58,6 +59,18 @@ def ads_dashboard(request):
             "ad": ad,
             "stats": stats
         })
+
+    # Pour le tableau récapitulatif par type de campagne
+    # (utile si tu veux les totaux détaillés par campagne)
+    summary_by_type = {}
+
+    for entry in dashboard_data:
+        contract_type = entry["ad"].campaign_type
+        revenue = entry["stats"]["revenue"]
+
+        if contract_type not in summary_by_type:
+            summary_by_type[contract_type] = Decimal("0.00")
+        summary_by_type[contract_type] += revenue
 
     # for <select> filters
     all_ads = Advertisement.objects.all()
@@ -68,9 +81,9 @@ def ads_dashboard(request):
         "contracts": all_contracts,
         "dashboard_data": dashboard_data,
         "total_revenue": total_revenue,
+        "summary_by_type": summary_by_type,
         "start_date": start_date,
         "end_date": end_date,
         "request": request,  # Pour le template
     }
     return render(request, "admin/ads_dashboard.html", context)
-

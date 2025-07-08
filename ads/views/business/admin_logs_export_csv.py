@@ -104,20 +104,20 @@ def export_ads_logs_csv(request):
     writer = csv.writer(response)
     writer.writerow([
         "Type",
-        "Horodatage",
-        "Publicité",
-        "Partenaire",
-        "Contrat",
-        "ID utilisateur",
-        "Détails"
+        "Datetime",
+        "IO number",
+        "Partner",
+        "Contract reference",
+        "User id",
+        "Details"
     ])
 
     for log in all_logs:
         writer.writerow([
             log.log_type,
             log.timestamp.strftime("%Y-%m-%d %H:%M"),
-            log.advertisement.title,
-            log.advertisement.contract.partner.name,
+            log.advertisement.io_reference_number,
+            log.advertisement.contract.partner.legal_name,
             str(log.advertisement.contract),
             log.user.id if log.user else "unknown",
             log.details if log.log_type == "conversion" else ""

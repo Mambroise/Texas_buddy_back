@@ -1,24 +1,32 @@
-<!-- # ---------------------------------------------------------------------------
+{# ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :ads/templates/admin/ads_dashboard.py
+# File   : ads/templates/admin/ads_dashboard.html
 # Author : Morice
-# --------------------------------------------------------------------------- -->
-
+# --------------------------------------------------------------------------- #}
 
 {% extends "admin/base_site.html" %}
 {% load static %}
 
 {% block content %}
 <p>
-    <a href="{% url 'ads:ads_logs_dashboard' %}" class="button default">Voir les logs publicitaires</a>
+    <a href="{% url 'ads:ads_logs_dashboard' %}" class="button default">Show all ads logs</a>
 </p>
-<h1>Dashboard Publicité</h1>
+<h1>Insertion orders Dashboard</h1>
+
+{% if start_date and end_date %}
+    <div style="background:#f0f0f0; padding:10px; border-left:5px solid #0C4B91; margin-bottom: 20px;">
+        <strong style="font-size: 1.05em;">Period:</strong>
+        from <span style="color:#0C4B91;font-style: italic;font-size: 1.3em;">{{ start_date }}</span>
+        to <span style="color:#0C4B91;font-style: italic;font-size: 1.3em;">{{ end_date }}</span>
+    </div>
+{% endif %}
+
 
 <form method="get" style="margin-bottom:20px;">
-    <label>Contrat:
+    <label>Contract:
         <select name="contract">
-            <option value="">Tous</option>
+            <option value="">all</option>
             {% for contract in contracts %}
             <option value="{{ contract.id }}" {% if contract.id|stringformat:"s" == request.GET.contract %}selected{% endif %}>
                 {{ contract }}
@@ -26,59 +34,107 @@
             {% endfor %}
         </select>
     </label>
-    <label>Publicité:
+    <label>advertisement IO:
         <select name="advertisement">
-            <option value="">Toutes</option>
+            <option value="">all</option>
             {% for ad in ads %}
             <option value="{{ ad.id }}" {% if ad.id|stringformat:"s" == request.GET.advertisement %}selected{% endif %}>
-                {{ ad.title }}
+                {{ ad.io_reference_number }}
             </option>
             {% endfor %}
         </select>
     </label>
-    <label>Du:
+    <label>From:
         <input type="date" name="start_date" value="{{ start_date }}">
     </label>
-    <label>Au:
+    <label>To:
         <input type="date" name="end_date" value="{{ end_date }}">
     </label>
-    <button type="submit">Filtrer</button>
+    <button type="submit">Filter</button>
 </form>
 
-<table border="1" cellspacing="0" cellpadding="4">
+<table width="100%" border="1" cellspacing="0" cellpadding="4">
     <thead>
         <tr>
-            <th>Publicité</th>
-            <th>Partenaire</th>
-            <th>Contrat</th>
+            <th>advertisement</th>
+            <th>Partner</th>
+            <th>Contract</th>
             <th>Impressions</th>
             <th>Clics</th>
+            <th>CTR (%)</th>
             <th>Conversions</th>
-            <th>Revenu (€)</th>
-            <th>Facture</th>
+            <th>CTA (%)</th>
+            <th>revenue ($)</th>
+            <th>Invoice</th>
         </tr>
     </thead>
     <tbody>
         {% for item in dashboard_data %}
         <tr>
-            <td>{{ item.ad.title }}</td>
-            <td>{{ item.ad.contract.partner.name }}</td>
+            <td>{{ item.ad.io_reference_number }}</td>
+            <td>{{ item.ad.contract.partner }}</td>
             <td>{{ item.ad.contract }}</td>
             <td>{{ item.stats.impressions }}</td>
             <td>{{ item.stats.clicks }}</td>
+            <td>
+                {% if item.stats.ctr is not None %}
+                {{ item.stats.ctr }}%
+                {% else %}
+                -
+                {% endif %}
+            </td>
             <td>{{ item.stats.conversions }}</td>
-            <td>{{ item.stats.revenue|floatformat:2 }}</td>
+            <td>
+                {% if item.stats.cta is not None %}
+                {{ item.stats.cta }}%
+                {% else %}
+                -
+                {% endif %}
+            </td>
+            <td>
+                {{ item.stats.revenue|floatformat:2 }}
+                {% if item.stats.breakdown %}
+                  <br>
+                  <ul style="margin:4px 0; padding-left:1.2em; font-size:0.9em;">
+                    {% for type, subtotal in item.stats.breakdown.items %}
+                      <li>{{ type }} : {{ subtotal|floatformat:2 }} €</li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+            </td>
             <td>
                 <a href="{% url 'ads:generate_invoice' item.ad.id %}?start_date={{ start_date }}&end_date={{ end_date }}" class="button default">
-                    Générer
+                    generate invoice
                 </a>
             </td>
         </tr>
         {% endfor %}
         <tr>
-            <td colspan="6" style="text-align:right;"><strong>Total Revenu:</strong></td>
+            <td colspan="6" style="text-align:right;"><strong>Total revenue:</strong></td>
             <td><strong>{{ total_revenue|floatformat:2 }} €</strong></td>
+            <td></td>
         </tr>
     </tbody>
 </table>
+
+{% if summary_by_type %}
+<h2>Répartition des revenues par campagne</h2>
+<table border="1" cellspacing="0" cellpadding="4">
+    <thead>
+        <tr>
+            <th>Campaign type</th>
+            <th>Total revenue (€)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for type, total in summary_by_type.items %}
+        <tr>
+            <td>{{ type }}</td>
+            <td>{{ total|floatformat:2 }} €</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
 {% endblock %}

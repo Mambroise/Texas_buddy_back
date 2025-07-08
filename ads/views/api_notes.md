@@ -20,7 +20,7 @@ json
 
 
 
-POST /api/ads/click/
+POST /api/ads/track-click/
 json
 
 {

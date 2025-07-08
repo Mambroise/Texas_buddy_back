@@ -16,6 +16,12 @@
       font-size: 12px;
       color: #333;
     }
+    .mt-5 {
+      margin-top: 5rem;
+    }
+    .mt-10 {
+      margin-top: 10rem;
+    }
     .header, .footer {
       text-align: center;
     }
@@ -78,11 +84,11 @@
     {% endif %}
   </div>
 
-  <div class="invoice-title">
+  <div class="invoice-title mt-5">
     Invoice #{{ invoice.reference }}
   </div>
 
-  <table>
+  <table class="mt-5">
     <tr>
       <td><strong>Invoice Date:</strong></td>
       <td>{{ invoice.generated_at|date:"Y-m-d" }}</td>
@@ -104,56 +110,57 @@
       </td>
     </tr>
   </table>
+  <p class="mt-5"><strong>Contract Reference:</strong> {{ invoice.advertisement.contract.contract_reference }}</p>
+  <p class="mt-5"><strong>Advertisement:</strong> {{ invoice.advertisement.io_reference_number }}</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Campaign Type</th>
+        <th>Count</th>
+        <th>Unit Price ({{ invoice.advertisement.currency }})</th>
+        <th>Line Total ({{ invoice.advertisement.currency }})</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for line in line_items %}
+      <tr>
+        <td>{{ line.label }}</td>
+        <td>
+          {% if line.count > 0 %}
+            {{ line.count }}
+          {% else %}
+            &ndash;
+          {% endif %}
+        </td>
+        <td>
+          {% if line.unit_price > 0 %}
+            {{ line.unit_price|floatformat:2 }}
+          {% else %}
+            &ndash;
+          {% endif %}
+        </td>
+        <td>
+          {% if line.line_total > 0 %}
+            {{ line.line_total|floatformat:2 }}
+          {% else %}
+            &ndash;
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 
-<table>
-  <thead>
-    <tr>
-      <th>Campaign Type</th>
-      <th>Count</th>
-      <th>Unit Price ({{ invoice.currency }})</th>
-      <th>Line Total ({{ invoice.currency }})</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for line in line_items %}
-    <tr>
-      <td>{{ line.label }}</td>
-      <td>
-        {% if line.count > 0 %}
-          {{ line.count }}
-        {% else %}
-          &ndash;
-        {% endif %}
-      </td>
-      <td>
-        {% if line.unit_price > 0 %}
-          {{ line.unit_price|floatformat:2 }}
-        {% else %}
-          &ndash;
-        {% endif %}
-      </td>
-      <td>
-        {% if line.line_total > 0 %}
-          {{ line.line_total|floatformat:2 }}
-        {% else %}
-          &ndash;
-        {% endif %}
-      </td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
 
-
-  <table class="totals">
+  <table class="totals mt-5">
       {% if invoice.tax_rate and invoice.tax_rate|floatformat > 0 %}
     <tr>
       <td style="width:80%; text-align:right;"><strong>Subtotal (Excl. Tax):</strong></td>
-      <td>{{ invoice.total_amount|floatformat:2 }} {{ invoice.currency }}</td>
+      <td>{{ invoice.total_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
     </tr>
       <tr>
         <td style="text-align:right;"><strong>Sales Tax ({{ invoice.tax_rate }}%):</strong></td>
-        <td>{{ invoice.tax_amount|floatformat:2 }} {{ invoice.currency }}</td>
+        <td>{{ invoice.tax_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
       </tr>
       {% else %}
       <tr>
@@ -164,11 +171,11 @@
         {% endif %}
         <tr>
           <td style="text-align:right; font-weight:bold; font-size: 1.5rem;">Total (Incl. Tax):</td>
-          <td style="font-weight:bold; font-size: 1.5rem;">{{ invoice.total_amount|floatformat:2 }} {{ invoice.currency }}</td>
+          <td style="font-weight:bold; font-size: 1.5rem;">{{ invoice.total_amount|floatformat:2 }} {{ invoice.advertisement.currency }}</td>
         </tr>
   </table>
 
-  <div class="footer">
+  <div class="footer mt-10">
     <p>
       Thank you for your business.<br>
       {% if company_info.legal_notice %}

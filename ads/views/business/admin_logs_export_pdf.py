@@ -97,15 +97,28 @@ def export_ads_logs_pdf(request):
 
     all_logs = sorted(all_logs, key=lambda x: x.timestamp, reverse=True)
 
-    # Template HTML
+    # KPIs résumé
+    total_impressions = impressions_qs.count()
+    total_clicks = clicks_qs.count()
+    total_conversions = conversions_qs.count()
+
+    ctr = (total_clicks / total_impressions) * 100 if total_impressions else 0
+    conversion_rate = (total_conversions / total_clicks) * 100 if total_clicks else 0
+
+
     html_string = render_to_string(
-        "admin/ads_logs_pdf_template.html",
+        "admin/pdf/ads_logs_pdf.html",
         {
             "logs": all_logs,
             "start_date": start_date,
             "end_date": end_date,
             "generation_date": timezone.now().strftime("%Y-%m-%d %H:%M"),
-            "logo_path": os.path.join(settings.BASE_DIR, "static/images/logo.png")
+            "logo_path": os.path.join(settings.BASE_DIR, "static/images/logo.png"),
+            "total_impressions": total_impressions,
+            "total_clicks": total_clicks,
+            "total_conversions": total_conversions,
+            "ctr": round(ctr, 2),
+            "conversion_rate": round(conversion_rate, 2),
         }
     )
 
