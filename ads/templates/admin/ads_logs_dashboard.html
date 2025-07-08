@@ -10,39 +10,52 @@
 {% load static %}
 
 {% block content %}
-<h1>Logs Publicitaires</h1>
+<h1>Advertisement logs</h1>
+{% if start_date and end_date %}
+    <div style="background:#f0f0f0; padding:10px; border-left:5px solid #0C4B91; margin-bottom: 20px;">
+        <strong style="font-size: 1.05em;">Period:</strong>
+        from <span style="color:#0C4B91;font-style: italic;font-size: 1.3em;">{{ start_date }}</span>
+        to <span style="color:#0C4B91;font-style: italic;font-size: 1.3em;">{{ end_date }}</span>
+    </div>
+{% endif %}
 <div style="margin: 20px;">
 
     <a href="{% url 'ads:export_ads_logs_csv' %}?{{ query_string }}" class="btn btn-success">
-        📄 Télécharger CSV
+        📄 Download CSV
     </a>
-    <a href="{% url 'ads:export_ads_logs_pdf' %}?{{ query_string }}" class="btn btn-danger">
-        📝 Télécharger PDF
+    <a href="{% url 'ads:export_ads_logs_pdf' %}?{{ query_string }}" class="btn btn-warning">
+        📝 Download PDF
+    </a>
+    <a href="{% url 'ads:export_impressions_xlsx' %}?{{ query_string }}" class="btn btn-danger">
+        📝 Download XLSX
+    </a>
+    <a href="{% url 'ads:export_ads_logs_xml' %}?{{ query_string }}" class="btn btn-danger">
+        📝 Download XML
     </a>
 </div>
 
 
 
 <form method="get" style="margin-bottom:20px;">
-    <label>Type de Log:
+    <label>Log type:
         <select name="log_type">
-            <option value="">Tous</option>
+            <option value="">All</option>
             <option value="impression" {% if log_type == "impression" %}selected{% endif %}>Impression</option>
             <option value="click" {% if log_type == "click" %}selected{% endif %}>Clic</option>
-            <option value="conversion" {% if log_type == "conversion" %}selected{% endif %}>Conversion</option>
+            <option value="conversion" {% if log_type == "conversion" %}selected{% endif %}>Action</option>
         </select>
     </label>
-    <label>Partenaire:
+    <label>Partner:
         <select name="partner">
-            <option value="">Tous</option>
+            <option value="">All</option>
             {% for partner in partners %}
             <option value="{{ partner.id }}" {% if partner.id|stringformat:"s" == request.GET.partner %}selected{% endif %}>
-                {{ partner.name }}
+                {{ partner }}
             </option>
             {% endfor %}
         </select>
     </label>
-    <label>Contrat:
+    <label>Contract:
         <select name="contract">
             <option value="">Tous</option>
             {% for contract in contracts %}
@@ -52,35 +65,35 @@
             {% endfor %}
         </select>
     </label>
-    <label>Publicité:
+    <label>Advertisement IO:
         <select name="advertisement">
-            <option value="">Toutes</option>
+            <option value="">all</option>
             {% for ad in advertisements %}
             <option value="{{ ad.id }}" {% if ad.id|stringformat:"s" == request.GET.advertisement %}selected{% endif %}>
-                {{ ad.title }}
+                {{ ad.io_reference_number }}
             </option>
             {% endfor %}
         </select>
     </label>
-    <label>Du:
+    <label>from:
         <input type="date" name="start_date" value="{{ start_date }}">
     </label>
-    <label>Au:
+    <label>to:
         <input type="date" name="end_date" value="{{ end_date }}">
     </label>
-    <button type="submit">Filtrer</button>
+    <button type="submit">Filter</button>
 </form>
 
-<table border="1" cellspacing="0" cellpadding="4">
+<table width="80%" border="1" cellspacing="0" cellpadding="4">
     <thead>
         <tr>
             <th>Type</th>
             <th>Date</th>
-            <th>Publicité</th>
-            <th>Partenaire</th>
-            <th>Contrat</th>
-            <th>ID utilisateur</th>
-            <th>Détails</th>
+            <th>Advertisement</th>
+            <th>Partner</th>
+            <th>Contract</th>
+            <th>User ID</th>
+            <th>Details</th>
         </tr>
     </thead>
     <tbody>
@@ -88,14 +101,14 @@
         <tr>
             <td>{{ log.log_type|capfirst }}</td>
             <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
-            <td>{{ log.advertisement.title }}</td>
-            <td>{{ log.advertisement.contract.partner.name }}</td>
+            <td>{{ log.advertisement.io_reference_number }}</td>
+            <td>{{ log.advertisement.contract.partner.legal_name }}</td>
             <td>{{ log.advertisement.contract.contract_reference }}</td>
             <td>
                 {% if log.user %}
                     {{ log.user.id }}
                 {% else %}
-                    Utilisateur inconnu
+                    Unknown user
                 {% endif %}
             </td>
             <td>
@@ -107,7 +120,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7">Aucun log trouvé.</td></tr>
+        <tr><td colspan="7">No log available.</td></tr>
         {% endfor %}
     </tbody>
 </table>

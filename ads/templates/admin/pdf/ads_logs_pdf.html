@@ -73,6 +73,27 @@
         </tr>
     </table>
 
+    <table style="margin-bottom: 25px; font-size: 9px;">
+        <thead>
+            <tr>
+                <th>Total Impressions</th>
+                <th>Total Clicks</th>
+                <th>Total Conversions</th>
+                <th>Click-Through Rate (CTR)</th>
+                <th>Conversion Rate</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ total_impressions }}</td>
+                <td>{{ total_clicks }}</td>
+                <td>{{ total_conversions }}</td>
+                <td>{{ ctr }}%</td>
+                <td>{{ conversion_rate }}%</td>
+            </tr>
+        </tbody>
+    </table>
+
     <table>
         <thead>
             <tr>
@@ -91,14 +112,14 @@
                 <td>{{ log.timestamp|date:"Y-m-d H:i" }}</td>
                 <td>
                     {% if log.advertisement %}
-                        {{ log.advertisement.title }}
+                        {{ log.advertisement.io_reference_number }}
                     {% else %}
                         -
                     {% endif %}
                 </td>
                 <td>
                     {% if log.advertisement and log.advertisement.contract and log.advertisement.contract.partner %}
-                        {{ log.advertisement.contract.partner.name }}
+                        {{ log.advertisement.contract.partner.legal_name }}
                     {% else %}
                         -
                     {% endif %}

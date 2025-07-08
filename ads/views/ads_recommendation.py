@@ -13,7 +13,7 @@
 
 # class GetRecommendedAdView(GetRateLimitedAPIView):
 #     """
-#     Recommande une pub adaptée selon le contexte (type, position, validité…)
+#     Recommande une pub adaptée selon le contexte (type, position, interet user, validité…)
 #     """
 #     permission_classes = []  # Public
 #     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class

@@ -13,8 +13,6 @@ from email.mime.image import MIMEImage
 from django.template.loader import render_to_string
 from django.core.mail import EmailMultiAlternatives
 
-from ads.utils import generate_invoice_pdf
-from .company_service import CompanyService
 
 logger = logging.getLogger("texasbuddy")  
 
@@ -65,48 +63,6 @@ def send_2fa_code_email(user, code):
 
     except Exception as e:
         logger.error(f"Error sending 2FA code email to user {user.email}: {str(e)}", exc_info=True)
-
-
-def send_invoice_email(invoice):
-    try:
-        company_info = CompanyService.get_company_info()
-
-        subject = _('Your invoice for advertisement: {title}').format(title=invoice.advertisement.title)
-        from_email = company_info.email
-        to_email = invoice.advertisement.contract.partner.contact_email
-        bcc_email = [company_info.email]
-
-        email_body = {
-            'company_info': company_info,
-            'invoice': invoice,
-        }
-
-        html_content = render_to_string('email/invoice_email.html', email_body)
-        text_content = _('Votre client mail ne supporte pas le HTML.')
-
-        email = EmailMultiAlternatives(
-            subject,
-            text_content,
-            from_email,
-            [to_email],
-            bcc=bcc_email
-        )
-        email.attach_alternative(html_content, "text/html")
-
-        # Génération du PDF via la fonction séparée
-        pdf_buffer = generate_invoice_pdf(invoice, company_info)
-        filename = f"invoice_{invoice.id}.pdf"
-        email.attach(filename, pdf_buffer.read(), "application/pdf")
-
-        # Attacher les images éventuelles
-        email = attach_pic_to_email(email)
-
-        email.send()
-        return True
-
-    except Exception as e:
-        print(f"Erreur lors de l'envoi de la facture par email : {e}")
-        return False
 
 
 def attach_pic_to_email(email):

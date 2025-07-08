@@ -28,7 +28,6 @@ class AdInvoice(models.Model):
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     tax_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0)
-    currency = models.CharField(max_length=10, default="USD")
     due_date = models.DateField()
     is_paid = models.BooleanField(default=False)
     paid_at = models.DateTimeField(blank=True, null=True)
@@ -45,8 +44,12 @@ class AdInvoice(models.Model):
     notes = models.TextField(blank=True)
     pdf_file = models.FileField(upload_to="invoices/", blank=True, null=True)
 
+    class Meta:
+        verbose_name = "facture/invoice"
+
+        
     def __str__(self):
-        return f"Invoice {self.reference} - Advertisement {self.advertisement.title}"
+        return f"Invoice {self.reference} - io({self.advertisement.io_reference_number})"
 
     def clean(self):
         """
@@ -83,3 +86,5 @@ class AdInvoice(models.Model):
             self.reference = generate_invoice_reference()
         self.full_clean()  # Ensure validation always runs before saving
         super().save(*args, **kwargs)
+
+    
