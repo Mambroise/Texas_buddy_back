@@ -20,7 +20,7 @@ from django.db.models import Q
 
 from .models import Advertisement, Contract
 from .models.ads_types import AdImpression, AdClick, AdConversion
-from notifications.services.email_service import send_invoice_email
+from .services.email_service import send_invoice_email
 
 
 
@@ -30,19 +30,18 @@ admin.site.index_title = "Welcome to Texas Buddy Admin Panel"
 
 @admin.register(Partner)
 class PartnerAdmin(admin.ModelAdmin):
-    list_display = ("name", "contact_email", "phone", "is_active", "created_at")
+    list_display = ("name", "legal_name", "contact_email", "tax_id_number", "phone", "is_active", "created_at")
     list_filter = ("is_active",)
-    search_fields = ("name", "contact_email")
+    search_fields = ("legal_name", "contact_person", "tax_id_number", "contact_email")
 
 
 @admin.register(Contract)
 class ContractAdmin(admin.ModelAdmin):
     list_display = (
-        "partner", "contract_reference", "campaign_type", "start_date", "duration_months",
-        "signed_date", "cpm_price", "cpc_price", "cpa_price", "forfait_price", "is_active"
+        "partner", "contract_reference", "start_date", "duration_months",
+        "signed_date", "auto_renew", "renewal_period_months", "is_active"
     )
     readonly_fields = ("contract_reference",)
-    list_filter = ("campaign_type", "is_active")
     search_fields = ("partner__name",)
     date_hierarchy = "start_date"
 
@@ -50,13 +49,13 @@ class ContractAdmin(admin.ModelAdmin):
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
     list_display = (
-        "title", "contract", "start_date", "end_date",
-        "related_activity", "related_event", "is_active_display",
-        "impressions_count", "clicks_count", "conversions_count"
+        "title", "io_reference_number", "contract", "campaign_type", "start_date", "end_date",
+        "format", "related_activity", "related_event", "impressions_count", "clicks_count", "conversions_count", 
+        "reporting_frequency", "reporting_format", "status", "make_good_status",
     )
     list_filter = ("start_date", "end_date", "contract__partner__name")
-    search_fields = ("title", "contract__partner__name")
-    readonly_fields = ("impressions_count", "clicks_count", "conversions_count")
+    search_fields = ("title","io_reference_number", "contract__partner__name")
+    readonly_fields = ("io_reference_number", "impressions_count", "clicks_count", "conversions_count")
     actions = ["activate_ads", "deactivate_ads"]
 
     def is_active_display(self, obj):
@@ -123,7 +122,7 @@ class PriorityAdAdmin(admin.ModelAdmin):
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = (
         "id", "reference", "advertisement", "period_start", "period_end",
-        "generated_at", "total_amount", "tax_amount", "tax_rate", "currency", "is_paid"
+        "generated_at", "total_amount", "tax_amount", "tax_rate", "is_paid"
     )
     readonly_fields = ("reference",)
     list_filter = ("advertisement", "is_paid", "paid_at")

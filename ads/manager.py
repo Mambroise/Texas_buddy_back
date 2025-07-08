@@ -15,6 +15,9 @@ class AdLogQuerySet(models.QuerySet):
 
     def by_partner(self, partner_id):
         return self.filter(advertisement__contract__partner_id=partner_id)
+    
+    def by_advertisement(self, ad_id):
+        return self.filter(advertisement_id=ad_id)
 
     def between_dates(self, start_date, end_date):
         return self.filter(timestamp__date__gte=start_date, timestamp__date__lte=end_date)

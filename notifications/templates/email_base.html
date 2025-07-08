@@ -31,7 +31,7 @@
         }
         .terms-bg-image {
             position: relative;
-            height: 35vh;
+            height: 27vh;
             width: 100%;
             margin-bottom: 2rem;
             overflow: hidden;
@@ -60,44 +60,19 @@
         .text-center {
             text-align: center;
         }
-        .hr {
-            margin-top: 1rem;
-            background-color: white;
-            height: 1px; 
-            border: none; 
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        table, th, td {
-            border: 1px solid #ddd;
-        }
-        th, td {
-            padding: 10px;
-            text-align: left;
-        }
-        th {
-            background-color: rgba(36, 32, 32,0.9);
-            color: white;
-        }
-        .total-row {
-            font-weight: bold;
-            background-color: rgba(226,114,91,0.9);
-        }
-        .frame {
-            width: 60%;
-            border: 2px solid rgb(152, 48, 63);
-            border-radius: 5px;
+        .totals {
             margin: 10px auto;
-            padding: 5px 40px;
-            text-align: center;
-            background: rgb(152, 48, 63);
+            width: 80%;
         }
-        .frame p {
-            font-size: 1.2rem;
-            color: white;
+        .totals td {
+            border: none;
+            padding: 4px;
+        }
+        .legal {
+            font-size: 10px;
+            margin-top: 30px;
+            text-align: center;
+            font-style: italic;
         }
         .footer {
             height: 4vh;
@@ -107,37 +82,19 @@
             border-top: none;
         }
         
-        h1 {
-            color: rgb(152, 48, 63);
+        h2 {
+            color: white;
             text-align: center;
         }
         p {
             margin-bottom: 15px;
-        }
-        .highlight {
-            font-weight: bold;
-        }
-        .cta {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .cta a {
-            display: inline-block;
-            padding: 10px 20px;
-            background-color: rgb(152, 48, 63);
-            color: #fff;
-            text-decoration: none;
-            border-radius: 5px;
-        }
-        .cta a:hover {
-            background-color: rgb(152, 48, 63);
         }
     </style>
 </head>
 <body>
     <div class="modal">
         <div class="terms-bg-image">
-            <img src="cid:austin" alt="austincolorado river" width="100%" height="auto" style="background-size: cover;background-position: bottom;">  
+            <img src="cid:austin" alt="austincolorado river" width="100%" height="auto" style="width:100%; height:100%; object-fit: cover; object-position: center;">  
             <hr class="hr">                
         </div>
         {% block content %}

@@ -1,0 +1,107 @@
+<!-- # ---------------------------------------------------------------------------
+#                    L e B o n P l a n T e x a s   ( 2 0 2 4 )
+# ---------------------------------------------------------------------------
+# File   : texasbuddy/notifications/templates/email/base_email.html
+# Author : Morice
+# --------------------------------------------------------------------------- -->
+
+
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Texas Buddy</title>
+    <style>
+        .modal {
+            width: 40vw;
+            margin: auto;
+            background: linear-gradient(rgb(152, 48, 63),rgb(152, 48, 63),rgb(255, 255, 255),rgb(255, 255, 255));
+            border: 1px solid #333;
+            border-bottom: none;
+            border-radius: 8px 8px 0px 0px;
+            color: var(--black-color);
+        }
+        @media (max-width: 750px) {
+            .modal{
+                width: 95vw;
+            }
+        }
+        .terms-bg-image {
+            position: relative;
+            height: 28vh;
+            width: 100%;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+        .container {
+            width: 85%;
+            margin: auto;
+            padding: 2rem;
+            font-family: Arial, sans-serif;
+            color: #333;
+            background-color: white;
+            border-radius: 3px;
+        } 
+        .my-0 {
+            margin: 0.3rem 0rem;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .c-red{
+            color: red;
+        }
+        .c-green{
+            color: green;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .totals {
+            margin: 10px auto;
+            width: 80%;
+        }
+        .totals td {
+            border: none;
+            padding: 4px;
+        }
+        .legal {
+            font-size: 10px;
+            margin-top: 30px;
+            text-align: center;
+            font-style: italic;
+        }
+        .footer {
+            height: 4vh;
+            width: 99.9%;
+            background: rgb(152, 48, 63);
+            border: 1px solid #333;
+            border-top: none;
+        }
+        
+        h2 {
+            color: white;
+            text-align: center;
+        }
+        p {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="modal">
+        <div class="terms-bg-image">
+            <img src="cid:austin" alt="austincolorado river" width="100%" height="auto" style="width:100%; height:100%; object-fit: cover; object-position: center;">  
+            <hr class="hr">                
+        </div>
+        {% block content %}
+        {% endblock %}
+        <div class="footer">
+            <p style="color: white; text-align: center;">Texas Buddy</p>
+        </div>
+    </div>
+</body>
+</html>
