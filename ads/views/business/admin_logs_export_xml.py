@@ -9,6 +9,7 @@
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 from itertools import chain
+import logging
 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
@@ -17,6 +18,7 @@ from django.utils.dateparse import parse_date
 
 from ads.models import AdImpression, AdClick, AdConversion
 
+logger = logging.getLogger(__name__)
 
 def parse_date_safe(date_str):
     if not date_str:
@@ -111,4 +113,18 @@ def export_ads_logs_xml(request):
     # Réponse HTTP
     response = HttpResponse(pretty_xml, content_type="application/xml")
     response["Content-Disposition"] = f'attachment; filename="logs_publicitaires_{start_date}_{end_date}.xml"'
+
+    logger.info(
+        "[PXMLDF EXPORT] logs made by %s | start_date=%s | end_date=%s | contract_id=%s | partner_id=%s | advertisement_id=%s | impressions=%d | clicks=%d | conversions=%d",
+        request.user.email,
+        start_date,
+        end_date,
+        contract_id,
+        partner_id,
+        advertisement_id,
+        impressions.count(),
+        clicks.count(),
+        conversions.count(),
+    )
+
     return response

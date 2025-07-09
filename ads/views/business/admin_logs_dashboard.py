@@ -14,6 +14,10 @@ from itertools import chain
 from django.utils.dateparse import parse_date
 
 from ads.models import Advertisement, Contract, AdImpression, AdClick, AdConversion
+import logging
+
+# log settings
+logger = logging.getLogger(__name__)
 
 
 def parse_date_safe(date_str):
@@ -42,6 +46,19 @@ def ads_logs_dashboard(request):
     start_date = request.GET.get("start_date")
     end_date = request.GET.get("end_date")
     log_type = request.GET.get("log_type")  # impression / click / conversion
+
+
+
+    logger.info(
+        "[ADS_LOGS_DASHBOARD] Accessed by admin %s | Filters: contract=%s, partner=%s, ad=%s, type=%s, start=%s, end=%s",
+        request.user.email,
+        contract_id or "ALL",
+        partner_id or "ALL",
+        advertisement_id or "ALL",
+        log_type or "ALL",
+        start_date,
+        end_date
+    )
 
     # Dates par défaut : premier jour du mois courant
     # Date par défaut: uniquement le 1er jour du mois en cours
