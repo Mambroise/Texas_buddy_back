@@ -1,12 +1,4 @@
 # ---------------------------------------------------------------------------
-#                           TEXAS BUDDY   ( 2 0 2 5 )
-# ---------------------------------------------------------------------------
-# File   :ads/views/io_reference.py
-# Author : Morice
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
 #                           TEXAS BUDDY  ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
 # File   :ads/services/io_reference.py
@@ -15,39 +7,44 @@
 
 from django.utils import timezone
 from django.db.models import Max
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 def generate_io_reference():
-    # We need to import the Advertisement model here to avoid circular imports
-    # if Advertisement also imports from this service.
-    # It's generally better to pass the model as an argument or ensure
-    # the import happens within the function if strictly necessary.
-    # For simplicity, we'll import it here, assuming `Advertisement`
-    # doesn't directly import `generate_io_reference` at the module level
-    # (only in the save method, which is fine).
-    from ads.models import Advertisement 
-
     """
-    Generates a unique IO (Insertion Order) reference in the format:
+    Génère une référence IO (Insertion Order) unique au format :
     IO-YYYY-XXXX
     """
-    year = timezone.now().year
+    from ads.models import Advertisement  # Import local pour éviter les imports circulaires
 
-    # Find the highest existing IO number for this year
-    # We filter by 'io_reference_number' which is the field for the IO reference.
-    max_io_ref = (
-        Advertisement.objects
-        .filter(io_reference_number__startswith=f"IO-{year}-")
-        .aggregate(max_num=Max("io_reference_number"))
-    )
+    try:
+        year = timezone.now().year
+        logger.debug("[IOReference] Generating IO reference for year %d", year)
 
-    last_io_ref = max_io_ref["max_num"]
+        # Cherche la dernière référence existante de l’année
+        max_io_ref = (
+            Advertisement.objects
+            .filter(io_reference_number__startswith=f"IO-{year}-")
+            .aggregate(max_num=Max("io_reference_number"))
+        )
 
-    if last_io_ref:
-        # Extract the numeric part and increment
-        last_number = int(last_io_ref.split("-")[-1])
-        new_number = last_number + 1
-    else:
-        # If no existing IOs for the current year, start from 1
-        new_number = 1
+        last_io_ref = max_io_ref["max_num"]
+        logger.debug("[IOReference] Last IO reference found: %s", last_io_ref)
 
-    return f"IO-{year}-{new_number:04d}"
+        if last_io_ref:
+            # Extrait la partie numérique et incrémente
+            last_number = int(last_io_ref.split("-")[-1])
+            new_number = last_number + 1
+        else:
+            # Aucune référence encore enregistrée cette année
+            new_number = 1
+
+        new_io_ref = f"IO-{year}-{new_number:04d}"
+        logger.info("[IOReference] New IO reference generated: %s", new_io_ref)
+        return new_io_ref
+
+    except Exception as e:
+        logger.error("[IOReference] Error generating IO reference: %s", str(e), exc_info=True)
+        raise

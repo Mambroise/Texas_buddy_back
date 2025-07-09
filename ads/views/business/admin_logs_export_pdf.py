@@ -16,12 +16,15 @@ from datetime import datetime
 from io import BytesIO
 from urllib.parse import urlencode
 from itertools import chain
+import logging
 
 from xhtml2pdf import pisa
 
 from ads.models import AdImpression, AdClick, AdConversion
 from .admin_logs_dashboard import parse_date_safe
 
+# log settings
+logger = logging.getLogger(__name__)
 
 @staff_member_required
 def export_ads_logs_pdf(request):
@@ -132,5 +135,15 @@ def export_ads_logs_pdf(request):
 
     if pisa_status.err:
         return HttpResponse("Erreur lors de la génération du PDF.<pre>" + html_string + "</pre>")
+    
+    logger.info(
+        f"[PDF EXPORT] {request.user.email} exported ads logs "
+        f"({log_type or 'all types'}) "
+        f"from {start_date} to {end_date} | "
+        f"Contract: {contract_id or 'N/A'} | "
+        f"Partner: {partner_id or 'N/A'} | "
+        f"Ad: {advertisement_id or 'N/A'} | "
+        f"Impressions: {total_impressions}, Clicks: {total_clicks}, Conversions: {total_conversions}"
+    )
 
     return response

@@ -12,8 +12,12 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+import logging
 
 from ads.models import AdImpression, AdClick, AdConversion
+
+# log settings
+logger = logging.getLogger(__name__)
 
 def parse_date_safe(date_str):
     if not date_str:
@@ -122,5 +126,14 @@ def export_ads_logs_csv(request):
             log.user.id if log.user else "unknown",
             log.details if log.log_type == "conversion" else ""
         ])
+    logger.info(
+        f"[CSV EXPORT] {request.user.email} exported ads logs "
+        f"({log_type or 'all types'}) "
+        f"from {start_date} to {end_date} | "
+        f"Contract: {contract_id or 'N/A'} | "
+        f"Partner: {partner_id or 'N/A'} | "
+        f"Ad: {advertisement_id or 'N/A'} | "
+        f"Total logs: {len(list(all_logs))}"
+    )
 
     return response

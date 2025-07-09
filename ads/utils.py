@@ -6,12 +6,15 @@
 # ---------------------------------------------------------------------------
 
 import io
+import logging
 from decimal import Decimal, ROUND_HALF_UP
 from django.template.loader import render_to_string
 from django.utils import timezone
 from xhtml2pdf import pisa
 
 from ads.services.revenue_calculator import compute_ad_revenue
+
+logger = logging.getLogger(__name__)
 
 
 def build_invoice_lines(ad, stats, contract):
@@ -20,6 +23,8 @@ def build_invoice_lines(ad, stats, contract):
     en fonction du type de campagne.
     """
     lines = []
+
+    logger.debug("[InvoiceLines] Building invoice lines for ad: %s (type: %s)", ad.io_reference_number, ad.campaign_type)
 
     # CPM
     cpm_price = ad.cpm_price or Decimal("0")
@@ -90,7 +95,6 @@ def build_invoice_lines(ad, stats, contract):
         })
 
     if ad.campaign_type == "COMBO":
-        # COMBO ajoute le forfait ET les performances
         lines.append({
             "label": "Combo",
             "count": 1,
@@ -98,6 +102,7 @@ def build_invoice_lines(ad, stats, contract):
             "line_total": combo_total.quantize(Decimal("0.01"), ROUND_HALF_UP)
         })
 
+    logger.debug("[InvoiceLines] %d line(s) generated for invoice.", len(lines))
     return lines
 
 
@@ -106,26 +111,42 @@ def generate_invoice_pdf(invoice, company_info):
     Génère un PDF de facture et retourne un buffer BytesIO prêt à être lu.
     Construit aussi les lignes de facturation pour tous les campaign types.
     """
-    # 1) calculer stats et lignes
-    ad = invoice.advertisement
-    contract = ad.contract
-    stats = compute_ad_revenue(ad, invoice.period_start, invoice.period_end)
-    line_items = build_invoice_lines(ad, stats, contract)
+    logger.info("[InvoicePDF] Starting PDF generation for invoice ID: %s", invoice.id)
 
-    # 3) préparer le contexte du template
-    pdf_context = {
-        'invoice': invoice,
-        'company_info': company_info,
-        'generation_date': timezone.now(),
-        'line_items': line_items,
+    try:
+        # 1) calculer stats et lignes
+        ad = invoice.advertisement
+        contract = ad.contract
+        logger.debug("[InvoicePDF] Computing ad revenue for period %s to %s", invoice.period_start, invoice.period_end)
+        stats = compute_ad_revenue(ad, invoice.period_start, invoice.period_end)
 
-    }
-    html = render_to_string("admin/pdf/ad_invoice_pdf.html", pdf_context)
+        logger.debug("[InvoicePDF] Building invoice lines...")
+        line_items = build_invoice_lines(ad, stats, contract)
 
-    # 4) générer le PDF en mémoire
-    buffer = io.BytesIO()
-    pisa_status = pisa.CreatePDF(html, dest=buffer)
-    if pisa_status.err:
-        raise Exception("Error while creating invoice.")
-    buffer.seek(0)
-    return buffer
+        # 2) préparer le contexte du template
+        pdf_context = {
+            'invoice': invoice,
+            'company_info': company_info,
+            'generation_date': timezone.now(),
+            'line_items': line_items,
+        }
+
+        logger.debug("[InvoicePDF] Rendering HTML template for invoice...")
+        html = render_to_string("admin/pdf/ad_invoice_pdf.html", pdf_context)
+
+        # 3) générer le PDF en mémoire
+        buffer = io.BytesIO()
+        logger.debug("[InvoicePDF] Generating PDF in memory...")
+        pisa_status = pisa.CreatePDF(html, dest=buffer)
+
+        if pisa_status.err:
+            logger.error("[InvoicePDF] Failed to create PDF for invoice ID %s.", invoice.id)
+            raise Exception("Error while creating invoice.")
+
+        buffer.seek(0)
+        logger.info("[InvoicePDF] PDF successfully generated for invoice ID: %s", invoice.id)
+        return buffer
+
+    except Exception as e:
+        logger.error("[InvoicePDF] Unexpected error while generating PDF for invoice ID %s: %s", invoice.id, str(e), exc_info=True)
+        raise
