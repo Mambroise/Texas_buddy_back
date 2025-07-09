@@ -14,9 +14,11 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpResponse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+import logging
 
 from ads.models import AdImpression, AdClick, AdConversion
 
+logger = logging.getLogger(__name__)
 
 def parse_date_safe(date_str):
     if not date_str:
@@ -177,4 +179,17 @@ def export_ads_logs_xlsx(request):
     response = HttpResponse(content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response["Content-Disposition"] = f'attachment; filename="logs_publicitaires_{start_date}_{end_date}.xlsx"'
     wb.save(response)
+
+    logger.info(
+        "[XLSX EXPORT] logs made by %s | start_date=%s | end_date=%s | contract_id=%s | partner_id=%s | advertisement_id=%s | impressions=%d | clicks=%d | conversions=%d",
+        request.user.email,
+        start_date,
+        end_date,
+        contract_id,
+        partner_id,
+        advertisement_id,
+        impressions.count(),
+        clicks.count(),
+        conversions.count(),
+    )
     return response

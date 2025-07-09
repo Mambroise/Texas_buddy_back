@@ -16,13 +16,14 @@ from .models.priority_ad import PriorityAd
 from django.urls import reverse
 from django.utils.html import format_html
 from django.db.models import Q
-
+import logging
 
 from .models import Advertisement, Contract
 from .models.ads_types import AdImpression, AdClick, AdConversion
 from .services.email_service import send_invoice_email
 
 
+logger = logging.getLogger(__name__)
 
 admin.site.site_header = "Texas Buddy Administration"
 admin.site.site_title = "Texas Buddy Admin"
@@ -67,11 +68,13 @@ class AdvertisementAdmin(admin.ModelAdmin):
     def activate_ads(self, request, queryset):
         queryset.update(start_date="2024-01-01")
         self.message_user(request, "Pubs activées (attention aux dates réelles)")
+        logger.info(f"[Admin] {request.user} a activé {queryset.count()} publicité(s).")
 
     def deactivate_ads(self, request, queryset):
         from datetime import date, timedelta
         queryset.update(end_date=date.today() - timedelta(days=1))
         self.message_user(request, "Pubs désactivées")
+        logger.info(f"[Admin] {request.user} a désactivé {queryset.count()} publicité(s).")
     activate_ads.short_description = "Activer les publicités sélectionnées"
     deactivate_ads.short_description = "Désactiver les publicités sélectionnées"
 
@@ -130,17 +133,19 @@ class InvoiceAdmin(admin.ModelAdmin):
     date_hierarchy = "paid_at"
     actions = ["send_invoice_to_partner"]
 
-    def send_invoice_to_partner(modeladmin, request, queryset):
+    def send_invoice_to_partner(self, request, queryset):
         success_count = 0
         failure_count = 0
         for invoice in queryset:
             if send_invoice_email(invoice):
                 success_count += 1
+                logger.info(f"[Admin] Facture envoyée : ID {invoice.id}, Ad {invoice.advertisement.id}")
             else:
                 failure_count += 1
+                logger.error(f"[Admin] Échec envoi facture : ID {invoice.id}, Ad {invoice.advertisement.id}")
         if success_count:
             messages.success(request, f"{success_count} facture(s) envoyée(s) avec succès.")
         if failure_count:
             messages.error(request, f"Erreur lors de l'envoi de {failure_count} facture(s).")
-
+        logger.info(f"[Admin] {request.user} a lancé l'envoi de {queryset.count()} facture(s) - succès: {success_count}, échecs: {failure_count}")
 
