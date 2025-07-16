@@ -5,14 +5,13 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
-import datetime
-from datetime import datetime
+
 from django.contrib import admin
 from .models import (
     Partner, Advertisement, AdClick, AdImpression, AdConversion, AdInvoice, Contract
 )
 from django.contrib import messages
-from .models.priority_ad import PriorityAd
+
 from django.urls import reverse
 from django.utils.html import format_html
 from django.db.models import Q
@@ -34,6 +33,7 @@ class PartnerAdmin(admin.ModelAdmin):
     list_display = ("name", "legal_name", "contact_email", "tax_id_number", "phone", "is_active", "created_at")
     list_filter = ("is_active",)
     search_fields = ("legal_name", "contact_person", "tax_id_number", "contact_email")
+    readonly_fields = ("id", )
 
 
 @admin.register(Contract)
@@ -42,7 +42,7 @@ class ContractAdmin(admin.ModelAdmin):
         "partner", "contract_reference", "start_date", "duration_months",
         "signed_date", "auto_renew", "renewal_period_months", "is_active"
     )
-    readonly_fields = ("contract_reference",)
+    readonly_fields = ("contract_reference", "id",)
     search_fields = ("partner__name",)
     date_hierarchy = "start_date"
 
@@ -50,13 +50,13 @@ class ContractAdmin(admin.ModelAdmin):
 @admin.register(Advertisement)
 class AdvertisementAdmin(admin.ModelAdmin):
     list_display = (
-        "title", "io_reference_number", "contract", "campaign_type", "start_date", "end_date",
-        "format", "related_activity", "related_event", "impressions_count", "clicks_count", "conversions_count", 
+        "title", "io_reference_number","format", "contract", "campaign_type", "start_date",
+         "end_date", "related_activity", "related_event", "impressions_count", "clicks_count", "conversions_count", 
         "reporting_frequency", "reporting_format", "status", "make_good_status",
     )
-    list_filter = ("start_date", "end_date", "contract__partner__name")
+    list_filter = ("status", "format", "contract__partner__name")
     search_fields = ("title","io_reference_number", "contract__partner__name")
-    readonly_fields = ("io_reference_number", "impressions_count", "clicks_count", "conversions_count")
+    readonly_fields = ("id","io_reference_number", "impressions_count", "clicks_count", "conversions_count")
     actions = ["activate_ads", "deactivate_ads"]
 
     def is_active_display(self, obj):
@@ -114,20 +114,13 @@ class AdConversionAdmin(admin.ModelAdmin):
     readonly_fields = ("details",)
 
 
-@admin.register(PriorityAd)
-class PriorityAdAdmin(admin.ModelAdmin):
-    search_fields = ['advertisement__title', 'advertisement__contract__partner__name']
-    list_display = ['advertisement', 'is_active', 'created_at']
-    list_filter = ['is_active', 'created_at']
-
-
 @admin.register(AdInvoice)
 class InvoiceAdmin(admin.ModelAdmin):
     list_display = (
         "id", "reference", "advertisement", "period_start", "period_end",
         "generated_at", "total_amount", "tax_amount", "tax_rate", "is_paid"
     )
-    readonly_fields = ("reference",)
+    readonly_fields = ("id","reference",)
     list_filter = ("advertisement", "is_paid", "paid_at")
     search_fields = ("advertisement__contract__partner__name", "advertisement__title")
     date_hierarchy = "paid_at"

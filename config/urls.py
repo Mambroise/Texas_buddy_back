@@ -30,8 +30,7 @@ urlpatterns = [
     path('api/notifications/', include('notifications.urls', namespace='notifications')),
     
 ]
-# Ajout du support des langues
-urlpatterns = i18n_patterns(*urlpatterns)
+
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

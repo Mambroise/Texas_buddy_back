@@ -7,18 +7,19 @@
 
 import logging
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import status,permissions
 from rest_framework.generics import RetrieveUpdateAPIView
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 from django.utils.translation import gettext as _
 
-from ..serializers import UserSerializer,SetPasswordSerializer
+from ..serializers import UserSerializer,SetPasswordSerializer,UserInterestsUpdateSerializer
 from ..models import User
-from core.throttles import PostRateLimitedAPIView
+from core.throttles import PostRateLimitedAPIView,PatchRateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
-logger = logging.getLogger('texasbuddy')
+logger = logging.getLogger(__name__)
 
 # ─── View: CustomerImportAPIView ───────────────────────────────────────────
 
@@ -82,3 +83,34 @@ class ConfirmPasswordResetAPIView(PostRateLimitedAPIView):
         except User.DoesNotExist:
             logger.error("[REST_PASSWORD] Password reset failed: user not found for email %s", email)
             return Response({"detail": _("User not found.")}, status=status.HTTP_404_NOT_FOUND)
+
+
+
+class UpdateUserInterestsView(PatchRateLimitedAPIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user_email = request.user.email
+        logger.info("[INTERESTS_UPDATE] Update interests request from user: %s | Payload: %s", user_email, request.data)
+
+        try:
+            serializer = UserInterestsUpdateSerializer(
+                instance=request.user,
+                data=request.data,
+                partial=True
+            )
+            if serializer.is_valid():
+                serializer.save()
+                logger.info("[INTERESTS_UPDATE] Interests successfully updated for user: %s | New interests IDs: %s",
+                            user_email,
+                            request.data.get('interests'))
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            else:
+                logger.warning("[INTERESTS_UPDATE] Validation failed for user: %s | Errors: %s",
+                               user_email,
+                               serializer.errors)
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception("[INTERESTS_UPDATE] Unexpected exception for user %s: %s", user_email, e)
+            return Response({"detail": _("An unexpected error occurred.")},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
