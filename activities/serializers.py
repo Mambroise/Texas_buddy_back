@@ -8,6 +8,7 @@
 
 from rest_framework import serializers
 from .models import Activity,Event,Category,Promotion
+from users.models.user import User
 
 
 class CategorySerializer(serializers.ModelSerializer):

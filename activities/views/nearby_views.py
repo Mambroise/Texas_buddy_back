@@ -19,9 +19,25 @@ from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
 from ads.models import Advertisement
 from ads.views.ads_tracking_views import TrackImpression
+from ads.services.ad_scoring import AdScoringService
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
-logger = logging.getLogger('texasbuddy')
+logger = logging.getLogger(__name__)
+
+
+from math import radians, cos, sin, acos
+
+def haversine_distance(lat1, lon1, lat2, lon2):
+    R = 6371  # Rayon de la terre en km
+    try:
+        return round(R * acos(
+            cos(radians(lat1)) * cos(radians(lat2)) *
+            cos(radians(lon2) - radians(lon1)) +
+            sin(radians(lat1)) * sin(radians(lat2))
+        ), 3)
+    except ValueError:
+        # acos peut parfois dépasser légèrement [-1,1] à cause des arrondis
+        return None
 
 
 class NearbyPagination(PageNumberPagination):
@@ -110,12 +126,18 @@ class NearbyListAPIView(GetRateLimitedAPIView):
             return qs
 
         # ─── Load active advertisements ─────────────────────────────────────────
-        today = timezone.now().date()
-        ads_qs = Advertisement.objects.filter(
-            format="native",
-            start_date__lte=today,
-            end_date__gte=today
-        ).order_by("?")[:2]  # Random order or apply your own ordering
+        # today = timezone.now().date()
+        # ads_qs = Advertisement.objects.filter(
+        #     format="native",
+        #     start_date__lte=today,
+        #     end_date__gte=today
+        # ).order_by("?")[:2]  # Random order or apply your own ordering
+
+        # Service de scoring
+        user = request.user
+        ad_format="native"
+        ad_service = AdScoringService(user, ad_format, user_lat, user_lng)
+        ads_qs = ad_service.get_best_ads()
 
         serialized_ads = []
         for ad in ads_qs:
@@ -125,17 +147,30 @@ class NearbyListAPIView(GetRateLimitedAPIView):
                 serializer = ActivityListSerializer(ad_item, context={'request': request})
                 data = serializer.data
                 data["type"] = "activity"
+
+                # Calcul distance pour l'activité
+                if ad_item.latitude is not None and ad_item.longitude is not None:
+                    dist = haversine_distance(user_lat, user_lng, ad_item.latitude, ad_item.longitude)
+                    data["distance"] = dist if dist is not None else 999999
+                else:
+                    data["distance"] = 999999
+
             elif ad.related_event:
                 ad_item = ad.related_event
                 serializer = EventSerializer(ad_item, context={'request': request})
                 data = serializer.data
                 data["type"] = "event"
+
+                # Calcul distance pour l'événement
+                if ad_item.latitude is not None and ad_item.longitude is not None:
+                    dist = haversine_distance(user_lat, user_lng, ad_item.latitude, ad_item.longitude)
+                    data["distance"] = dist if dist is not None else 999999
+                else:
+                    data["distance"] = 999999
             else:
                 continue
 
             data["is_advertisement"] = True
-            data["distance"] = -1 # Default distance for ads without location to have them in list beginning
-            
             serialized_ads.append(data)
 
             # BUSINESS LOGIC: Track ad impressions

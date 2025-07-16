@@ -11,23 +11,22 @@ from django.urls import path
 from .views.business.admin_logs_export_csv import export_ads_logs_csv
 from .views.business.admin_logs_dashboard import ads_logs_dashboard
 from .views.ads_tracking_views import TrackClickView, TrackConversionView
-from .views.interstitial_ad_views import InterstitialAdView
-from .views.push_ad_views import PushNotificationAdView
 from django.shortcuts import render
 from .views.business.dashboard_views import ads_dashboard
 from .views.business.generate_invoice_views import generate_invoice
 from .views.business.admin_logs_export_pdf import export_ads_logs_pdf
 from .views.business.admin_logs_export_xlsx import export_ads_logs_xlsx
 from .views.business.admin_logs_export_xml import export_ads_logs_xml
+from .views.ads_recommendation import AdvertisementsRecommendationView
 
 app_name = 'ads'
+print(">>> Test de la vue recommend:", AdvertisementsRecommendationView)
 urlpatterns = [
     # ads stats
     path("track-click/", TrackClickView.as_view(), name="track-click"),
     path("track-conversion/", TrackConversionView.as_view(), name="track-conversion"),
     
-    path("interstitial/", InterstitialAdView.as_view(), name="interstitial-ad"), 
-    path('push/', PushNotificationAdView.as_view(), name='push-ads'), 
+    path("recommend/", AdvertisementsRecommendationView.as_view(), name="recommend-ad"),
     # Business
     path("generate-invoice/<int:advertisement_id>/", generate_invoice, name="generate_invoice"),
     path('admin/ads-dashboard/', ads_dashboard, name='ads_dashboard'),
@@ -38,5 +37,4 @@ urlpatterns = [
     path("ads/export-impressions-xlsx/", export_ads_logs_xlsx, name="export_impressions_xlsx"),
     path("ads/export-logs-xml/", export_ads_logs_xml, name="export_ads_logs_xml"),
 
-    # path("recommend/", GetRecommendedAdView.as_view(), name="recommend-ad"),
 ]

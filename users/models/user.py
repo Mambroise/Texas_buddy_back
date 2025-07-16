@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------------
 #                           TEXAS BUDDY   ( 2 0 2 5 )
 # ---------------------------------------------------------------------------
-# File   :texasbuddy/users/models/user.py
+# File   :users/models/user.py
 # Author : Morice
 # ---------------------------------------------------------------------------
 
@@ -10,6 +10,7 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.db import models
 from django_countries.fields import CountryField
 from django.utils import timezone
+from activities.models import Category
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -45,6 +46,19 @@ class User(AbstractBaseUser, PermissionsMixin):
     second_ip = models.GenericIPAddressField(null=True, blank=True)
     timestamp = models.DateTimeField(default=timezone.now)
     can_set_password = models.BooleanField(default=False)
+        # Consentement pour l'utilisation des données personnelles à des fins publicitaires
+    has_data_consent = models.BooleanField(
+        default=False,
+        verbose_name="Consentement pour les données"
+    )
+
+    # Centres d'intérêt de l'utilisateur, liés aux catégories d'activités
+    interests = models.ManyToManyField(
+        Category,
+        blank=True,
+        related_name="interested_users",
+        verbose_name="interests"
+    )
 
     # Required fields for admin
     is_active = models.BooleanField(default=False)
