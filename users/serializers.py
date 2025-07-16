@@ -8,6 +8,7 @@
 
 from rest_framework import serializers
 from .models.user import User
+from activities.models import Category
 from django.contrib.auth.password_validation import validate_password
 
 
@@ -48,3 +49,20 @@ class SetPasswordSerializer(serializers.Serializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
+
+class UserInterestsUpdateSerializer(serializers.ModelSerializer):
+    # Accepter une liste d’IDs de catégories depuis le front
+    interests = serializers.PrimaryKeyRelatedField(
+        many=True,
+        queryset=Category.objects.all()
+    )
+
+    class Meta:
+        model = User
+        fields = ['interests']
+
+    def update(self, instance, validated_data):
+        interests = validated_data.get('interests', [])
+        instance.interests.set(interests)  # remplace la liste actuelle
+        instance.save()
+        return instance

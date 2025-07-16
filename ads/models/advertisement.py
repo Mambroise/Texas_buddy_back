@@ -63,6 +63,14 @@ class Advertisement(models.Model):
     video_url = models.URLField(blank=True, null=True, verbose_name="URL Vidéo de l'Annonce/video_url")
     link_url = models.URLField(verbose_name="URL de Destination (Clic)/link_url", help_text="URL vers laquelle l'annonce redirige les utilisateurs lorsqu'ils cliquent.")
 
+    push_message = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True,
+        verbose_name="Message de la notification Push",
+        help_text="Texte court et percutant pour la notification push."
+    )
+
     # Dates de la campagne publicitaire
     start_date = models.DateField(verbose_name="Début de Campagne/start_date")
     end_date = models.DateField(verbose_name="Fin de Campagne/end_date")
@@ -97,6 +105,7 @@ class Advertisement(models.Model):
         verbose_name="Prix Total Convenu/total_agreed_price",
         help_text="Prix total fixe pour l'estimation de les campagnes à la performance."
     )
+    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Taux de Taxe (%)/tax_rate",)
 
     # Suivi des performances (compteurs réels)
     impressions_count = models.PositiveIntegerField(default=0, verbose_name="Nombre d'Impressions/impressions_count")
@@ -187,7 +196,7 @@ class Advertisement(models.Model):
         verbose_name="Événement Lié/related_event"
     )
     
-    tax_rate = models.DecimalField(max_digits=5, decimal_places=2, default=0, verbose_name="Taux de Taxe (%)/tax_rate",)
+    score_bonus = models.IntegerField(default=0,max_length=2)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name="dernière modification/updated_at")
 
@@ -266,4 +275,12 @@ class Advertisement(models.Model):
             self.io_reference_number = generate_io_reference()  
         self.clean()  # Run validation before saving
         super().save(*args, **kwargs)
-            
+
+    @property
+    def location(self):
+        """Retreive data (latitude, longitude) for ad."""
+        if self.related_activity and self.related_activity.latitude is not None:
+            return self.related_activity.latitude, self.related_activity.longitude
+        if self.related_event and self.related_event.latitude is not None:
+            return self.related_event.latitude, self.related_event.longitude
+        return None

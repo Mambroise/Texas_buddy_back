@@ -16,6 +16,7 @@ from .models.promotion import Promotion
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name", "description")
+    readonly_fields = ('id',)
     search_fields = ("name",)
 
 @admin.register(Activity)
