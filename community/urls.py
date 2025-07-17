@@ -7,8 +7,10 @@
 
 
 from django.urls import path
+from .views.review_views import ReviewListCreateView
 
 app_name = 'community'
-urlpatterns = [
 
+urlpatterns = [
+    path('reviews/', ReviewListCreateView.as_view(), name='create-review'),
  ]
