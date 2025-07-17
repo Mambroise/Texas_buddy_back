@@ -31,6 +31,7 @@ class Event(models.Model):
     image = models.ImageField(upload_to=generic_image_upload_to,validators=[validate_image],blank=True,null=True)
     price = models.FloatField(blank=True, null=True)
     duration = models.DurationField(blank=True, null=True)
+    average_rating = models.FloatField(default=0.0)
     staff_favorite = models.BooleanField(default=False)
     is_national = models.BooleanField(default=False)
     is_public = models.BooleanField(default=True)
