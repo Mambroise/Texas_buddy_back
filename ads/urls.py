@@ -20,7 +20,7 @@ from .views.business.admin_logs_export_xml import export_ads_logs_xml
 from .views.ads_recommendation import AdvertisementsRecommendationView
 
 app_name = 'ads'
-print(">>> Test de la vue recommend:", AdvertisementsRecommendationView)
+
 urlpatterns = [
     # ads stats
     path("track-click/", TrackClickView.as_view(), name="track-click"),
