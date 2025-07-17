@@ -12,7 +12,7 @@ from .views.event_views import EventDetailAPIView
 from .views.category_views import CategoryListAPIView
 from .views.nearby_views import NearbyListAPIView
 from .views.all_events_views import CurrentYearEventsList
-from .views.promotion_views import PromotionListAPIView
+from .views.promotion_views import PromotionListAPIView, CurrentPromotionsView
 
 app_name = 'activities'
 urlpatterns = [
@@ -22,5 +22,6 @@ urlpatterns = [
     path("events/<int:id>/", EventDetailAPIView.as_view(), name="event-detail"), # event all details
     path("categories/", CategoryListAPIView.as_view(), name="category-list"),
     path("promotions/", PromotionListAPIView.as_view(), name="category-list"),
+    path('promotions-activity-event/', CurrentPromotionsView.as_view(), name='current-promotions'),
  ]
 
