@@ -5,6 +5,7 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
+
 from django.db import models
 from django.core.exceptions import ValidationError
 
@@ -139,6 +140,7 @@ class Advertisement(models.Model):
         ("PDF", "pdf"),
         ("CSV", "csv"),
         ("XLSX", "xlsx"),
+        ("XML", "xml"),
     ]
     reporting_format = models.CharField(
         max_length=30,
@@ -196,7 +198,7 @@ class Advertisement(models.Model):
         verbose_name="Événement Lié/related_event"
     )
     
-    score_bonus = models.IntegerField(default=0,max_length=2)
+    score_bonus = models.IntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name="dernière modification/updated_at")
 
