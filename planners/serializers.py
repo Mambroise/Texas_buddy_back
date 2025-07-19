@@ -63,7 +63,7 @@ class TripSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Trip
-        fields = ['id', 'user', 'title', 'start_date', 'end_date', 'created_at', 'updated_at', 'days']
+        fields = ['id', 'user', 'title', 'start_date', 'end_date', 'adults', 'children' 'created_at', 'updated_at', 'days']
         read_only_fields = ['user', 'created_at', 'updated_at']
 
 class TripStepMoveSerializer(serializers.Serializer):
