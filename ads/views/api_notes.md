@@ -24,7 +24,7 @@ POST /api/ads/track-click/
 json
 
 {
-    "ad_id": 12,
+    "io_reference_number": "ABC-2025-001",
     "user_id": "optional"
 }
 
@@ -33,7 +33,7 @@ POST /api/ads/conversion/
 json
 
 {
-    "ad_id": 12,
+    "io_reference_number": "ABC-2025-001": 12,
     "user_id": "optional",
     "details": { "order_id": "X123", "amount": 99.00 }
 }
@@ -99,8 +99,7 @@ GET /ads/recommend/?fmt=native&lat=32.7767&lng=-96.7970
 Authorization: Bearer <token>
 📤 Exemple de réponse
 json
-Copier
-Modifier
+
 [
   {
     "id": 12,
