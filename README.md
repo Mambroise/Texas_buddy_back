@@ -1,3 +1,4 @@
+
 # 🌟 Texas Buddy – Contexte Complet
 
 ## 🚀 Vision Générale
@@ -156,4 +157,5 @@ Hébergement prévu sur **AWS**.
 
 **Auteur : Morice**  
 *(Dernière mise à jour : Juillet 2025)*
+
 
