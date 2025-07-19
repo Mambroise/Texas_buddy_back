@@ -126,13 +126,6 @@ class NearbyListAPIView(GetRateLimitedAPIView):
             return qs
 
         # ─── Load active advertisements ─────────────────────────────────────────
-        # today = timezone.now().date()
-        # ads_qs = Advertisement.objects.filter(
-        #     format="native",
-        #     start_date__lte=today,
-        #     end_date__gte=today
-        # ).order_by("?")[:2]  # Random order or apply your own ordering
-
         # Service de scoring
         user = request.user
         ad_format="native"
