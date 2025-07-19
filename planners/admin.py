@@ -14,7 +14,7 @@ from .models import Trip, TripDay, TripStep, AddressCache
 class TripInLine(admin.TabularInline):
     model = Trip
     extra = 1
-    fields = ('title', 'start_date', 'end_date')
+    fields = ('title', 'start_date', 'end_date', 'adults', 'children')
     readonly_fields = ('created_at',)
 
 class TripDayInLine(admin.TabularInline):
