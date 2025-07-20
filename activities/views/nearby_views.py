@@ -41,7 +41,7 @@ def haversine_distance(lat1, lon1, lat2, lon2):
 
 
 class NearbyPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 30
     page_size_query_param = 'page_size'
     max_page_size = 100
 
