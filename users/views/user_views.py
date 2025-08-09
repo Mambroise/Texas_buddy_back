@@ -58,6 +58,7 @@ class UserProfileView(RetrieveUpdateAPIView):
         return super().patch(request, *args, **kwargs)
 
 class ConfirmPasswordResetAPIView(PostRateLimitedAPIView):
+    permission_classes = [permissions.AllowAny]
     def post(self, request):
         logger.info("Password reset data received for: %s", request.data.get("email"))
 
