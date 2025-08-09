@@ -98,40 +98,6 @@ class Verify2FACodeAPIView(PostRateLimitedAPIView):
             logger.error("[2FA_REGISTRATION] 2FA verification failed: user not found for email %s", email)
             return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
 
-# Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
-class VerifyResetPwd2FACodeAPIView(PostRateLimitedAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
-
-    def post(self, request):
-        logger.info("[2FA_RESET_PWD] Incoming 2FACode verification for user: %s", request.user.email)
-        serializer = TwoFACodeVerificationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        email = serializer.validated_data['email']
-        code = serializer.validated_data['code']
-
-        try:
-            user = User.objects.get(email=email)
-            code_entry = TwoFACode.objects.filter(user=user, code=code, is_used=False).last()
-
-            if not code_entry or code_entry.is_expired():
-                logger.warning("[2FA_REGISTRATION] expired or missing request: %s", request.data)
-                return Response({"detail": _("invalid code or expired.")}, status=status.HTTP_400_BAD_REQUEST)
-
-            # switch bool to true as code has been used
-            code_entry.is_used = True
-            code_entry.save()
-            logger.info("[2FA_RESET_PWD] 2FACode verification successful for user: %s", email)
-
-            user.can_set_password = True
-            user.save()
-
-            return Response({"message": _("code valid. You can now set your password")},status=status.HTTP_200_OK)
-        except User.DoesNotExist:
-            logger.error("[2FA_RESET_PWD] 2FA verification failed: user not found for email %s", email)
-            return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
-
 
 # Method to set the pwd in user entity
 class SetPasswordAPIView(PostRateLimitedAPIView):
@@ -147,7 +113,7 @@ class SetPasswordAPIView(PostRateLimitedAPIView):
         return ip
 
     def post(self, request):
-        logger.info("[RESET_PASSWORD] Incoming pwd data for user: %s", request.user.email)
+        logger.info("[RESET_PASSWORD] Incoming pwd data for user: %s", request.data.get("email"))
         serializer = SetPasswordSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -238,12 +204,12 @@ class LoginAPIView(PostRateLimitedAPIView):
     
 # logged in User ask for a password reset 
 class RequestPasswordResetAPIView(PostRateLimitedAPIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
-        logger.info("[REQUEST_PASSWORD_RESET] Incoming data for user: %s", request.user.email)
         email = request.data.get("email")
+        logger.info("[REQUEST_PASSWORD_RESET] Incoming data for user: %s", email)
         if not email:
             logger.warning("[REQUEST_PASSWORD_RESET] Missing email in request.")
             return Response({"detail": _("Email is required.")}, status=status.HTTP_400_BAD_REQUEST)
@@ -251,11 +217,46 @@ class RequestPasswordResetAPIView(PostRateLimitedAPIView):
         try:
             user = User.objects.get(email=email)
             generate_2fa_code(user)
-            logger.info("[REQUEST_PASSWORD_RESET] 2FA code successfully sent to user: %s", request.user.email)
+            logger.info("[REQUEST_PASSWORD_RESET] 2FA code successfully sent to user: %s", email)
             return Response({"message": _("Security code has been sent by email.")}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             logger.error("[REQUEST_PASSWORD_RESET] Password reset failed: user not found for email %s", email)
             return Response({"detail": _("No user with this email was found.")}, status=status.HTTP_404_NOT_FOUND)
+
+
+# Method to check the 2 FA code sent after the registration code is valid on first connexion. Registration finalisation 
+class VerifyResetPwd2FACodeAPIView(PostRateLimitedAPIView):
+    permission_classes = [permissions.AllowAny]
+    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+
+    def post(self, request):
+        serializer = TwoFACodeVerificationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        email = serializer.validated_data['email']
+        code = serializer.validated_data['code']
+        logger.info("[2FA_RESET_PWD] Incoming 2FACode verification for user: %s", email)
+
+        try:
+            user = User.objects.get(email=email)
+            code_entry = TwoFACode.objects.filter(user=user, code=code, is_used=False).last()
+
+            if not code_entry or code_entry.is_expired():
+                logger.warning("[2FA_REGISTRATION] expired or missing request: %s", request.data)
+                return Response({"detail": _("invalid code or expired.")}, status=status.HTTP_400_BAD_REQUEST)
+
+            # switch bool to true as code has been used
+            code_entry.is_used = True
+            code_entry.save()
+            logger.info("[2FA_RESET_PWD] 2FACode verification successful for user: %s", email)
+
+            user.can_set_password = True
+            user.save()
+
+            return Response({"message": _("code valid. You can now set your password")},status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            logger.error("[2FA_RESET_PWD] 2FA verification failed: user not found for email %s", email)
+            return Response({"detail": _("No user found.")}, status=status.HTTP_404_NOT_FOUND)
 
     
 # logout standard, pour déconnecter un appareil de l'application
