@@ -25,6 +25,13 @@ class Activity(models.Model):
     website = models.URLField(blank=True)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
+    primary_category = models.ForeignKey(
+        Category,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="primary_for_activities",
+        help_text="Category for markers in flutter UI etc."
+    )
     category = models.ManyToManyField(Category, related_name="activities")
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
@@ -33,6 +40,7 @@ class Activity(models.Model):
     duration = models.DurationField(blank=True, null=True)
     average_rating = models.FloatField(default=0.0)
     staff_favorite = models.BooleanField(default=False)
+    is_by_reservation = models.BooleanField(default=False)
     is_unique = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -10,8 +10,7 @@ from pathlib import Path
 import os
 from decouple import config
 from datetime import timedelta
-import logging
-from logging.handlers import RotatingFileHandler
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
