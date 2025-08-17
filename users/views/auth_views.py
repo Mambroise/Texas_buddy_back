@@ -153,7 +153,7 @@ class ResendRegistrationNumberAPIView(PostRateLimitedAPIView):
     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def post(self, request):
-        logger.info("[RESEND_SIGN_UP_NUMBER] Incoming data for user: %s", request.user.email)
+        logger.info("[RESEND_SIGN_UP_NUMBER] Incoming data for user: %s", request.data.get("email"))
         serializer = ResendRegistrationNumberSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
@@ -161,7 +161,7 @@ class ResendRegistrationNumberAPIView(PostRateLimitedAPIView):
         try:
             user = User.objects.get(email=email)
             send_credentials_email(user)
-            logger.info("[RESEND_SIGN_UP_NUMBER] sign_up_number successfully sent by email to user: %s", request.user.email)
+            logger.info("[RESEND_SIGN_UP_NUMBER] sign_up_number successfully sent by email to user: %s", email)
 
             return Response({"message": _("Your Registration code has been sent by email.")},
                             status=status.HTTP_200_OK)

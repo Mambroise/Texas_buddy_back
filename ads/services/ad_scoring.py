@@ -65,7 +65,7 @@ class AdScoringService:
 
         selected = [ad['ad_object'] for ad in scored_ads[:ad_count]]
         logger.info(
-            f"[AdScoringService] Selected {len(selected)} ads for format={self.format} → IDs: {[a.id for a in selected]}"
+            f"[AdScoringService] Selected {len(selected)} ads for format={self.format} => IDs: {[a.id for a in selected]}"
         )
         return selected
 

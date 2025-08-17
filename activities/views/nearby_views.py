@@ -97,7 +97,8 @@ class NearbyListAPIView(GetRateLimitedAPIView):
             output_field = FloatField()
 
         def build_queryset(base_queryset, is_event=False):
-            qs = base_queryset.prefetch_related("category", "promotions")
+            qs = base_queryset.select_related("primary_category") \
+                      .prefetch_related("category", "promotions")
 
             if is_event:
                 qs = qs.filter(
