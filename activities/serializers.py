@@ -29,16 +29,19 @@ class PromotionSerializer(serializers.ModelSerializer):
 # --- Liste : utilisé sur la carte ---
 class ActivityListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
+    primary_category = CategorySerializer(read_only=True) 
     has_promotion = serializers.SerializerMethodField()
     distance = serializers.FloatField(read_only=True)
+
 
     class Meta:
         model = Activity
         fields = [
-            "id", "name", "place_id", "latitude", "longitude", "category",
+            "id", "name", "place_id", "latitude", "longitude", "category", "primary_category", 
             "staff_favorite", "price", "has_promotion", "distance",
         ]
 
+    
     def get_has_promotion(self, obj):
         request = self.context.get('request')
         date_str = request.query_params.get('date') if request else None
@@ -58,41 +61,48 @@ class ActivityListSerializer(serializers.ModelSerializer):
         ).first()
 
         return promotion is not None
+    
+    
 
 
 # --- Détail : utilisé lorsqu'on clique sur une activité ---
 class ActivityDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
+    primary_category = CategorySerializer(read_only=True) 
     current_promotion = PromotionSerializer(read_only=True)
 
 
     class Meta:
         model = Activity
         fields = [
-            "id", "name", "description", "category",
+            "id", "name", "description", "category", "primary_category", 
             "address", "city", "state", "zip_code", "place_id", "latitude", "longitude",
             "image", "website", "phone", "email",
             "price", "duration", "staff_favorite", "is_active", "created_at",
-            "current_promotion"
+            "current_promotion", 
         ]
+
 
 class EventSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
+    primary_category = CategorySerializer(read_only=True) 
     promotions = PromotionSerializer(many=True, read_only=True)
     current_promotion = serializers.SerializerMethodField()
     has_promotion = serializers.SerializerMethodField()
     distance = serializers.FloatField(read_only=True)
+
 
     class Meta:
         model = Event
         fields = [
             "id", "name", "description", "start_datetime", "end_datetime",
             "location", "city", "state", "place_id", "latitude", "longitude",
-            "category", "website", "image", "price", "duration", "staff_favorite",
+            "category", "primary_category", "website", "image", "price", "duration", "staff_favorite",
             "is_public", "created_at",
-            "promotions", "current_promotion", "has_promotion", "distance",
+            "promotions", "current_promotion", "has_promotion", "distance", 
         ]
 
+    
     def get_current_promotion(self, obj):
         promotion = obj.current_promotion
         if promotion:

@@ -27,6 +27,13 @@ class Event(models.Model):
     latitude = models.FloatField(null=True, blank=True)
     longitude = models.FloatField(null=True, blank=True)
     category = models.ManyToManyField(Category, related_name="events")
+    primary_category = models.ForeignKey(
+        Category,
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name="primary_for_events",
+        help_text="Category for markers in flutter UI etc."
+    )
     website = models.URLField(blank=True)
     image = models.ImageField(upload_to=generic_image_upload_to,validators=[validate_image],blank=True,null=True)
     price = models.FloatField(blank=True, null=True)
@@ -34,6 +41,7 @@ class Event(models.Model):
     average_rating = models.FloatField(default=0.0)
     staff_favorite = models.BooleanField(default=False)
     is_national = models.BooleanField(default=False)
+    has_updated_dates = models.BooleanField(default=True)
     is_public = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
