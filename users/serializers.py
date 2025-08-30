@@ -16,7 +16,7 @@ from django.contrib.auth.password_validation import validate_password
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'country', 'sign_up_number']
+        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'country', 'sign_up_number', 'first_ip', 'second_ip']
 
     def create(self, validated_data):
         return User.objects.create_user(**validated_data)
