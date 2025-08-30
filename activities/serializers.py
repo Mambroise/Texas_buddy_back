@@ -83,14 +83,18 @@ class ActivityDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+from rest_framework import serializers
+from .models import Activity, Event, Category, Promotion
+# ...
+
 class EventSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
-    primary_category = CategorySerializer(read_only=True) 
+    primary_category = CategorySerializer(read_only=True)
     promotions = PromotionSerializer(many=True, read_only=True)
     current_promotion = serializers.SerializerMethodField()
     has_promotion = serializers.SerializerMethodField()
     distance = serializers.FloatField(read_only=True)
-
+    type = serializers.SerializerMethodField()  # ✅ ajouté
 
     class Meta:
         model = Event
@@ -99,10 +103,13 @@ class EventSerializer(serializers.ModelSerializer):
             "location", "city", "state", "place_id", "latitude", "longitude",
             "category", "primary_category", "website", "image", "price", "duration", "staff_favorite",
             "is_public", "created_at",
-            "promotions", "current_promotion", "has_promotion", "distance", 
+            "promotions", "current_promotion", "has_promotion", "distance",
+            "type",  # ✅
         ]
 
-    
+    def get_type(self, obj):
+        return "event"
+
     def get_current_promotion(self, obj):
         promotion = obj.current_promotion
         if promotion:
