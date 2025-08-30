@@ -16,7 +16,6 @@ from rest_framework.views import APIView
 
 from activities.models import Activity, Event
 from activities.serializers import ActivityListSerializer, EventSerializer
-from ads.models import Advertisement
 from ads.views.ads_tracking_views import TrackImpression
 from ads.services.ad_scoring import AdScoringService
 
