@@ -8,12 +8,12 @@
 
 from rest_framework import serializers
 from .models import Trip, TripDay, TripStep
-from activities.serializers import ActivityListSerializer, EventSerializer
+from activities.serializers import ActivityListSerializer, EventDetailSerializer
 from activities.models import Activity, Event
 
 class TripStepSerializer(serializers.ModelSerializer):
     activity = ActivityListSerializer(read_only=True)
-    event = EventSerializer(read_only=True)
+    event = EventDetailSerializer(read_only=True)
     activity_id = serializers.PrimaryKeyRelatedField(queryset=Activity.objects.all(), write_only=True, required=False)
     event_id = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), write_only=True, required=False)
     end_time = serializers.TimeField(read_only=True)

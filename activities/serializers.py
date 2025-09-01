@@ -5,17 +5,20 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
-
 from rest_framework import serializers
-from .models import Activity,Event,Category,Promotion
-from users.models.user import User
+from .models import Activity, Event, Category, Promotion
 
+# -- Petits serializers de base ------------------------------------------------
 
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ['id', 'name', 'icon', 'description']
 
+class PromotionLiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Promotion
+        fields = ['title', 'discount_type', 'amount', 'end_date']
 
 class PromotionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,117 +28,125 @@ class PromotionSerializer(serializers.ModelSerializer):
             'start_date', 'end_date', 'is_active'
         ]
 
+# -- Helpers communs -----------------------------------------------------------
 
-# --- Liste : utilisé sur la carte ---
+def _reference_date_from_request(request):
+    from datetime import datetime
+    from django.utils import timezone
+    date_str = request.query_params.get('date') if request else None
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
+    except ValueError:
+        return timezone.now().date()
+
+# -- LISTE: utilisés sur la carte (Nearby) ------------------------------------
+
 class ActivityListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
-    primary_category = CategorySerializer(read_only=True) 
+    primary_category = CategorySerializer(read_only=True)
     has_promotion = serializers.SerializerMethodField()
     distance = serializers.FloatField(read_only=True)
-
+    type = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
         fields = [
-            "id", "name", "place_id", "latitude", "longitude", "category", "primary_category", 
-            "staff_favorite", "price", "has_promotion", "distance",
+            "id", "name", "place_id", "latitude", "longitude",
+            "category", "primary_category",
+            "staff_favorite", "price",
+            "has_promotion", "distance",
+            "type",
         ]
 
-    
+    def get_type(self, obj): return "activity"
+
     def get_has_promotion(self, obj):
-        request = self.context.get('request')
-        date_str = request.query_params.get('date') if request else None
-
-        from datetime import datetime
-        from django.utils import timezone
-
-        try:
-            reference_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
-        except ValueError:
-            reference_date = timezone.now().date()
-
-        promotion = obj.promotions.filter(
+        ref_date = _reference_date_from_request(self.context.get('request'))
+        return obj.promotions.filter(
             is_active=True,
-            start_date__lte=reference_date,
-            end_date__gte=reference_date
-        ).first()
+            start_date__lte=ref_date,
+            end_date__gte=ref_date
+        ).exists()
 
-        return promotion is not None
-    
-    
+class EventListSerializer(serializers.ModelSerializer):
+    category = CategorySerializer(many=True)
+    primary_category = CategorySerializer(read_only=True)
+    has_promotion = serializers.SerializerMethodField()
+    distance = serializers.FloatField(read_only=True)
+    type = serializers.SerializerMethodField()
 
+    class Meta:
+        model = Event
+        fields = [
+            "id", "name", "place_id", "latitude", "longitude",
+            "start_datetime", "end_datetime",
+            "category", "primary_category",
+            "staff_favorite", "price",
+            "has_promotion", "distance",
+            "type",
+        ]
 
-# --- Détail : utilisé lorsqu'on clique sur une activité ---
+    def get_type(self, obj): return "event"
+
+    def get_has_promotion(self, obj):
+        ref_date = _reference_date_from_request(self.context.get('request'))
+        return obj.promotions.filter(
+            is_active=True,
+            start_date__lte=ref_date,
+            end_date__gte=ref_date
+        ).exists()
+
+# -- DÉTAIL: ouverts au double-tap / tap sur le label --------------------------
+
 class ActivityDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
-    primary_category = CategorySerializer(read_only=True) 
+    primary_category = CategorySerializer(read_only=True)
+    # Si le modèle expose une FK/OneToOne `current_promotion`, on peut garder read_only=True.
+    # Sinon, on la calcule dynamiquement avec un SerializerMethodField (voir Event).
     current_promotion = PromotionSerializer(read_only=True)
-
 
     class Meta:
         model = Activity
         fields = [
-            "id", "name", "description", "category", "primary_category", 
-            "address", "city", "state", "zip_code", "place_id", "latitude", "longitude",
+            "id", "name", "description",
+            "category", "primary_category",
+            "address", "city", "state", "zip_code",
+            "place_id", "latitude", "longitude",
             "image", "website", "phone", "email",
-            "price", "duration", "staff_favorite", "is_active", "created_at",
-            "current_promotion", 
+            "price", "duration", "is_by_reservation", "staff_favorite", "is_active", "created_at",
+            "current_promotion",
         ]
 
-
-from rest_framework import serializers
-from .models import Activity, Event, Category, Promotion
-# ...
-
-class EventSerializer(serializers.ModelSerializer):
+class EventDetailSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     primary_category = CategorySerializer(read_only=True)
     promotions = PromotionSerializer(many=True, read_only=True)
     current_promotion = serializers.SerializerMethodField()
     has_promotion = serializers.SerializerMethodField()
-    distance = serializers.FloatField(read_only=True)
-    type = serializers.SerializerMethodField()  # ✅ ajouté
 
     class Meta:
         model = Event
         fields = [
-            "id", "name", "description", "start_datetime", "end_datetime",
-            "location", "city", "state", "place_id", "latitude", "longitude",
-            "category", "primary_category", "website", "image", "price", "duration", "staff_favorite",
-            "is_public", "created_at",
-            "promotions", "current_promotion", "has_promotion", "distance",
-            "type",  # ✅
+            "id", "name", "description",
+            "start_datetime", "end_datetime",
+            "location", "city", "state",
+            "place_id", "latitude", "longitude",
+            "category", "primary_category", "website",
+            "image", "price", "duration", "is_by_reservation",
+            "staff_favorite", "is_public", "created_at",
+            "promotions", "current_promotion", "has_promotion",
         ]
 
-    def get_type(self, obj):
-        return "event"
-
+    # Si le modèle expose déjà une propriété/annotation `current_promotion`,
+    # on la renvoie en "plein" (pas lite) pour l’écran de détail.
     def get_current_promotion(self, obj):
-        promotion = obj.current_promotion
-        if promotion:
-            return PromotionLiteSerializer(promotion).data
-        return None
+        promo = getattr(obj, "current_promotion", None)
+        return PromotionSerializer(promo).data if promo else None
 
     def get_has_promotion(self, obj):
-        request = self.context.get('request')
-        date_str = request.query_params.get('date') if request else None
-
-        from datetime import datetime
-        from django.utils import timezone
-
-        try:
-            reference_date = datetime.strptime(date_str, "%Y-%m-%d").date() if date_str else timezone.now().date()
-        except ValueError:
-            reference_date = timezone.now().date()
-
+        ref_date = _reference_date_from_request(self.context.get('request'))
         return obj.promotions.filter(
             is_active=True,
-            start_date__lte=reference_date,
-            end_date__gte=reference_date
+            start_date__lte=ref_date,
+            end_date__gte=ref_date
         ).exists()
-
-
-class PromotionLiteSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Promotion
-        fields = ['title', 'discount_type', 'amount', 'end_date']
