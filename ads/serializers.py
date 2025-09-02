@@ -7,7 +7,7 @@
 
 
 from .models import Advertisement, Partner, AdInvoice
-from activities.serializers import EventSerializer, ActivityDetailSerializer
+from activities.serializers import EventDetailSerializer, ActivityDetailSerializer
 from rest_framework import serializers
 from .models import Partner, Advertisement, AdImpression, AdClick, AdConversion
 
@@ -49,7 +49,7 @@ class AdvertisementSerializer(serializers.ModelSerializer):
     # )
 
     # Event et Activity en lecture complète
-    related_event_detail = EventSerializer(source="related_event", read_only=True)
+    related_event_detail = EventDetailSerializer(source="related_event", read_only=True)
     related_activity_detail = ActivityDetailSerializer(source="related_activity", read_only=True)
 
     class Meta:

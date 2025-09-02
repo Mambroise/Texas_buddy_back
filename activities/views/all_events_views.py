@@ -13,7 +13,7 @@ from django_ratelimit.decorators import ratelimit
 from django.http import Http404
 
 from ..models import Event
-from ..serializers import EventSerializer
+from ..serializers import EventListSerializer
 from core.mixins import ListLogMixin
 
 
@@ -21,7 +21,7 @@ from core.mixins import ListLogMixin
 # Return all public events overlapping current year
 @method_decorator(ratelimit(key='ip', rate='12/m', method='GET', block=True), name='dispatch')
 class CurrentYearEventsList(ListLogMixin, generics.ListAPIView):
-    serializer_class = EventSerializer
+    serializer_class = EventListSerializer
     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
 
     def get_queryset(self):
@@ -42,7 +42,7 @@ class CurrentYearEventsList(ListLogMixin, generics.ListAPIView):
 # Return public events overlapping the requested year AND within map bounds
 # GET /api/events/in-bounds/?north=..&south=..&east=..&west=..&zoom=..&year=2025
 class EventsInBoundsList(ListLogMixin, generics.ListAPIView):
-    serializer_class = EventSerializer
+    serializer_class = EventListSerializer
     throttle_classes = []
 
     def _parse_bounds(self, request):
