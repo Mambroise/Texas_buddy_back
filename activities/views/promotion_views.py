@@ -18,7 +18,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.pagination import PageNumberPagination
 
 from activities.models import Promotion
-from activities.serializers import ActivityDetailSerializer, EventSerializer
+from activities.serializers import ActivityDetailSerializer, EventDetailSerializer
 
 from ..models.promotion import Promotion
 from ..serializers import PromotionSerializer
@@ -90,7 +90,7 @@ class CurrentPromotionsView(APIView):
                         "start_date": promo.start_date,
                         "end_date": promo.end_date,
                     },
-                    "event": EventSerializer(promo.event, context={"request": request}).data
+                    "event": EventDetailSerializer(promo.event, context={"request": request}).data
                 })
 
         # Combine les deux listes

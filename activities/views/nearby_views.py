@@ -15,7 +15,7 @@ from django.db.models import Func, FloatField, Q
 from rest_framework.views import APIView
 
 from activities.models import Activity, Event
-from activities.serializers import ActivityListSerializer, EventSerializer
+from activities.serializers import ActivityListSerializer, EventListSerializer
 from ads.views.ads_tracking_views import TrackImpression
 from ads.services.ad_scoring import AdScoringService
 
@@ -200,7 +200,7 @@ class NearbyListAPIView(APIView):
                 data["type"] = "activity"
             elif ad.related_event:
                 obj = ad.related_event
-                data = EventSerializer(obj, context={'request': request}).data
+                data = EventListSerializer(obj, context={'request': request}).data
                 data["type"] = "event"
             else:
                 continue
@@ -231,7 +231,7 @@ class NearbyListAPIView(APIView):
 
         if type_filter in [None, '', 'event']:
             e_qs = build_queryset(Event.objects.all(), is_event=True)
-            event_serialized = EventSerializer(e_qs, many=True, context={'request': request}).data
+            event_serialized = EventListSerializer(e_qs, many=True, context={'request': request}).data
             for item in event_serialized:
                 item['type'] = 'event'
             logger.info("[NEARBY_SEARCH] %d nearby events", len(event_serialized))

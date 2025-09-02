@@ -8,18 +8,30 @@
 from rest_framework import generics, permissions
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
+from django.shortcuts import get_object_or_404
 
 from ..models.event import Event
-from ..serializers import EventSerializer
+from ..serializers import EventDetailSerializer
 from core.mixins import RetrieveLogMixin
 
 
-# ─── View: EventDetailAPIView ──────────────────────────────────────────────
-@method_decorator(ratelimit(key='ip', rate='12/m', method='GET', block=True), name='dispatch')
-class EventDetailAPIView(RetrieveLogMixin,generics.RetrieveAPIView):
-    queryset = Event.objects.prefetch_related("category", "promotions")
-    serializer_class = EventSerializer
+# ─── Event by ID ─────────────────────────────────────────────────────────────
+@method_decorator(ratelimit(key='ip', rate='10/m', method='GET', block=True), name='dispatch')
+class EventDetailAPIView(RetrieveLogMixin, generics.RetrieveAPIView):
+    queryset = Event.objects.select_related('primary_category').prefetch_related('category', 'promotions')
+    serializer_class = EventDetailSerializer
+    lookup_field = 'id'
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = "id"
-    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
+    throttle_classes = []
 
+# ─── Event by place_id (optionnel) ───────────────────────────────────────────
+@method_decorator(ratelimit(key='ip', rate='10/m', method='GET', block=True), name='dispatch')
+class EventDetailByPlaceIdAPIView(RetrieveLogMixin, generics.RetrieveAPIView):
+    serializer_class = EventDetailSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = []
+
+    def get_object(self):
+        place_id = self.kwargs["place_id"]
+        qs = Event.objects.select_related('primary_category').prefetch_related('category', 'promotions')
+        return get_object_or_404(qs, place_id=place_id)
