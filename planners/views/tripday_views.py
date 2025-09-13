@@ -5,6 +5,7 @@
 # Author : Morice
 # ---------------------------------------------------------------------------
 
+
 import logging
 from datetime import timedelta
 from rest_framework import serializers, status, permissions
@@ -12,15 +13,17 @@ from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveUpdateDestroyAPIView
 )
+from rest_framework.response import Response
+from rest_framework import status
+
 from django.utils.decorators import method_decorator
 from django_ratelimit.decorators import ratelimit
 from rest_framework.response import Response
 from django.utils.translation import gettext_lazy as _
 
-from planners.services.address_service import get_or_create_address_cache_from_place_id
 from core.mixins import ListLogMixin, RetrieveLogMixin
 from ..models import TripDay
-from ..serializers import TripDaySerializer, TripDayAddressUpdateSerializer
+from ..serializers import TripDaySerializer
 from core.throttles import  PostRateLimitedAPIView
 
 # ─── Logger Setup ──────────────────────────────────────────────────────────
@@ -105,50 +108,3 @@ class TripDayDetailView(RetrieveLogMixin, RetrieveUpdateDestroyAPIView):
 
         logger.info("[TRIPDAY_DELETE] TripDay %s deleted by %s", instance.id, request.user.email)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-# --- ADDRESS UPDATE : POST avec RateLimitedAPIView ---
-class TripDayAddressUpdateView(PostRateLimitedAPIView):
-    permission_classes = [permissions.IsAuthenticated]
-    throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
-
-    def post(self, request, *args, **kwargs):
-        serializer = TripDayAddressUpdateSerializer(data=request.data)
-        if serializer.is_valid():
-            trip_day_id = serializer.validated_data['trip_day_id']
-            address = serializer.validated_data['address']
-            place_id = serializer.validated_data['place_id']
-
-            try:
-                trip_day = TripDay.objects.get(id=trip_day_id, trip__user=request.user)
-            except TripDay.DoesNotExist:
-                logger.warning("[TRIPDAY_ADDRESS_UPDATE_FAIL] TripDay %s not found for user %s", trip_day_id, request.user.email)
-                return Response({"error": _("TripDay not found")}, status=status.HTTP_404_NOT_FOUND)
-
-            # Lookup lat/lng
-            cache = get_or_create_address_cache_from_place_id(address, place_id)
-
-            # Update current TripDay
-            trip_day.address_cache = cache
-            trip_day.save()
-
-            # Propagation
-            propagation_count = TripDay.objects.filter(
-                trip=trip_day.trip,
-                date__gt=trip_day.date
-            ).update(
-                address_cache=cache
-            )
-
-            logger.info("[TRIPDAY_ADDRESS_UPDATE] TripDay %s updated with new address %s | Propagated to %s days", trip_day.id, cache.address, propagation_count)
-
-            return Response({
-                "updated_trip_day_id": trip_day_id,
-                "new_address": cache.address,
-                "latitude": cache.latitude,
-                "longitude": cache.longitude,
-                "propagation_count": propagation_count,
-            })
-
-        logger.warning("[TRIPDAY_ADDRESS_UPDATE_FAIL] Invalid data submitted by user %s : %s", request.user.email, serializer.errors)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
