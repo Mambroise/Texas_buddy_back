@@ -25,8 +25,7 @@ SECRET_KEY = 'django-insecure-46v8(xp!ryp))x=m=yarkmtrlw!jth$)3((*mb(^8*w)gydz!9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2','192.168.0.22' ]
-
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2','192.168.0.22', '192.168.1.20' ]
 
 
 # Application definition
@@ -207,6 +206,12 @@ EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 # API KEYS
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
+GOOGLE_PLACES_API_KEY = config("GOOGLE_PLACES_API_KEY", "")
+ADDRESS_CACHE_MIN_RESULTS = 1  # seuil x
+PLACES_SESSION_TTL_SECONDS = 180 # 3 min
+PLACES_REGION_BIAS = "us"
+PLACES_STATE_BIAS = "TX"
+
 
 LOGGING = {
     'version': 1,
@@ -252,6 +257,10 @@ LOGGING = {
             'propagate': False,
         },
     },
+
+
 }
+
+
 
 

@@ -9,13 +9,13 @@
 from django.urls import path
 from .views.trip_views import (
     TripListCreateView,
-    TripDetailView,
+    TripView,
 )
 from .views.tripday_views import (
     TripDayListCreateView,
-    TripDayDetailView,
-    TripDayAddressUpdateView
+    TripDayDetailView
 )
+from .views.address_cache_views import AddressSelectView, AddressSearchTXView
 from .views.tripstep_views import (
     TripDaySyncView,
     TripStepListCreateView,
@@ -27,11 +27,14 @@ app_name = 'planners'
 
 urlpatterns = [
     path('trips/', TripListCreateView.as_view(), name='trip-list-create'), # ok
-    path('trips/<int:id>/', TripDetailView.as_view(), name='trip-detail'), # ok
+    path('trips/<int:id>/', TripView.as_view(), name='trip-detail'), # ok
     # TripDay views
     # Note: This endpoint is for updating address cache, not creating TripDays
     # It will be used by the mobile app to update address cache for a TripDay
-    path('trip-days/address-update/', TripDayAddressUpdateView.as_view(), name='tripday-address-update'), # ok
+    path("address/search-tx/", AddressSearchTXView.as_view(), name="address-search-tx"),
+    path("address/select/", AddressSelectView.as_view(), name="address-select"),
+    path("trip-days/address/", AddressSelectView.as_view(), name="address-select"),
+
     # TripDay CRUD operations
     # Note: TripDays are created automatically when a Trip is created
     path('trip-days/', TripDayListCreateView.as_view(), name='tripday-list-create'), # ok create, 
