@@ -20,7 +20,7 @@ class TripInLine(admin.TabularInline):
 class TripDayInLine(admin.TabularInline):
     model = TripDay
     extra = 0
-    fields = ('date', 'address_cache',)
+    fields = ('date',) # 'address_cache'
 
 class TripStepInLine(admin.TabularInline):
     model = TripStep
@@ -30,13 +30,13 @@ class TripStepInLine(admin.TabularInline):
 
 @admin.register(Trip)
 class TripAdmin(admin.ModelAdmin):
-    list_display = ('title', 'user', 'start_date', 'end_date')
+    list_display = ('id', 'title', 'user', 'start_date', 'end_date')
     search_fields = ('email', 'title',)
     inlines = [TripDayInLine]
 
 @admin.register(TripDay)
 class TripDayAdmin(admin.ModelAdmin):
-    list_display = ('trip', 'date', 'address_cache')
+    list_display = ('trip', 'date')  # 'address_cache'
     inlines = [TripStepInLine]
 
 @admin.register(TripStep)
@@ -46,4 +46,8 @@ class TripStepAdmin(admin.ModelAdmin):
 
 @admin.register(AddressCache)
 class AddressCacheAdmin(admin.ModelAdmin):
-    readonly_fields = ('place_id', 'address', 'latitude', 'longitude', 'created_at')
+    list_display = ('id', 'name', 'formatted_address', 'city', 'state_code', 'country_code', 'place_id', 'lat', 'lng', 'source', 'language', 'hit_count', 'last_used_at')
+    search_fields = ('name', 'formatted_address', 'city', 'state_code', 'country_code')
+    readonly_fields = ('created_at', 'refreshed_at', 'expires_at', 'hit_count', 'last_used_at')
+    list_filter = ('country_code', 'state_code', 'city', 'source', 'language')
+    ordering = ('-last_used_at',)

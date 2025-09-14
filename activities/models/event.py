@@ -42,6 +42,7 @@ class Event(models.Model):
     duration = models.DurationField(blank=True, null=True)
     average_rating = models.FloatField(default=0.0)
     staff_favorite = models.BooleanField(default=False)
+    is_by_reservation = models.BooleanField(default=False)
     is_national = models.BooleanField(default=False)
     has_updated_dates = models.BooleanField(default=True)
     is_public = models.BooleanField(default=True)
