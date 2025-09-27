@@ -7,6 +7,7 @@
 
 import logging
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 from rest_framework import status, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -38,6 +39,9 @@ class TripStepListCreateView(ListLogMixin, GetRateLimitedAPIView, ListCreateAPIV
 
 
 # ─── TripStep Move View ─────────────────────────────────────────────────────
+from datetime import datetime, timedelta
+from django.core.exceptions import ValidationError
+
 class TripStepMoveView(PatchRateLimitedAPIView):
     permission_classes = [permissions.IsAuthenticated]
     throttle_classes = []  # Disable throttling for this view, as it's already rate-limited by the base class
@@ -53,17 +57,34 @@ class TripStepMoveView(PatchRateLimitedAPIView):
         serializer.is_valid(raise_exception=True)
         new_start = serializer.validated_data["start_time"]
 
-        # Update the moved step
+        # Petit helper pour manipuler les times avec la date du TripDay (cohérent jour-local)
+        def _as_dt(t):
+            day = getattr(step.trip_day, "date", datetime.today().date())
+            return datetime.combine(day, t)
+
+        def _add_minutes(t, minutes):
+            return (_as_dt(t) + timedelta(minutes=minutes)).time()
+
+        # 1) Move du step cible avec validation anti-overlap (via model.clean())
         old_start = step.start_time
         step.start_time = new_start
-        step.save()  # triggers automatic recalculation of end_time
+        try:
+            step.save()  # triggers clean() => lève ValidationError si overlap (fenêtre: [start - travel ; start + estimated])
+        except ValidationError as e:
+            # Retour propre si le créneau est déjà occupé
+            payload = e.message_dict if hasattr(e, 'message_dict') else {'detail': str(e)}
+            return Response(payload, status=status.HTTP_400_BAD_REQUEST)
 
         logger.info(
             "[TRIPSTEP_MOVE] TripStep %s moved from %s to %s by %s",
             step.id, old_start, new_start, request.user.email
         )
 
-        # Cascade update of following steps in the same TripDay
+        # 2) Domino : recaler les suivants au premier créneau *valide*
+        # Rappel: pour le step suivant S, sa fenêtre bloquée commence à S.start - S.travel.
+        # Pour éviter l'overlap avec 'step', on doit imposer:
+        #   (S.start - S.travel) >= step_end
+        # => S.start >= step_end + S.travel
         other_steps = TripStep.objects.filter(
             trip_day=step.trip_day
         ).exclude(id=step.id).order_by('start_time')
@@ -72,15 +93,27 @@ class TripStepMoveView(PatchRateLimitedAPIView):
         domino_count = 0
 
         for other in other_steps:
-            if other.start_time < current_end:
+            # start minimal requis pour respecter la fenêtre bloquée du suivant
+            min_start_needed = _add_minutes(current_end, (other.travel_duration_minutes or 0))
+
+            if other.start_time < min_start_needed:
                 logger.debug(
-                    "[TRIPSTEP_MOVE_DOMINO] Adjusting TripStep %s from %s to %s",
-                    other.id, other.start_time, current_end
+                    "[TRIPSTEP_MOVE_DOMINO] Adjusting TripStep %s from %s to %s (travel=%s)",
+                    other.id, other.start_time, min_start_needed, other.travel_duration_minutes
                 )
-                other.start_time = current_end
-                other.save()  # triggers recalculation of end_time
+                other.start_time = min_start_needed
+                try:
+                    other.save()  # clean() vérifiera aussi contre les steps encore plus loin
+                except ValidationError as e:
+                    # Si malgré l'ajustement un overlap subsiste (rare, mais safe), on remonte l'erreur
+                    payload = e.message_dict if hasattr(e, 'message_dict') else {'detail': str(e)}
+                    return Response(payload, status=status.HTTP_400_BAD_REQUEST)
+
                 current_end = other.end_time
                 domino_count += 1
+            else:
+                # Pas de recale -> mettre à jour la "borne" pour le prochain
+                current_end = other.end_time if other.end_time else current_end
 
         logger.info(
             "[TRIPSTEP_MOVE_DONE] TripStep %s moved with domino effect on %d steps.",
@@ -88,7 +121,6 @@ class TripStepMoveView(PatchRateLimitedAPIView):
         )
 
         return Response({"message": _("TripStep moved and adjusted successfully.")}, status=status.HTTP_200_OK)
-
 
 # ─── TripDay Sync View ──────────────────────────────────────────────────────
 
@@ -131,7 +163,7 @@ class TripStepMoveView(PatchRateLimitedAPIView):
     },
     description="Synchronize the list of TripSteps for the given TripDay. Allows creation and update of TripSteps, and automatically adjusts overlapping start times."
 )
-@method_decorator(ratelimit(key='ip', rate='30/10m', method='POST', block=True), name='dispatch')
+@method_decorator(ratelimit(key='ip', rate='50/10m', method='POST', block=True), name='dispatch')
 class TripDaySyncView(APIView):
     permission_classes = [IsAuthenticated]
 
