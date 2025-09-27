@@ -16,13 +16,16 @@ from rest_framework.exceptions import ValidationError
 from .models import Trip, TripDay, TripStep, AddressCache
 
 
+from datetime import datetime, timedelta
+from django.utils.translation import gettext_lazy as _
+
 class TripStepSerializer(serializers.ModelSerializer):
     activity = ActivityListSerializer(read_only=True)
     event = EventDetailSerializer(read_only=True)
     activity_id = serializers.PrimaryKeyRelatedField(queryset=Activity.objects.all(), write_only=True, required=False)
     event_id = serializers.PrimaryKeyRelatedField(queryset=Event.objects.all(), write_only=True, required=False)
     end_time = serializers.TimeField(read_only=True)
-
+    # ... ton code inchangé ...
     class Meta:
         model = TripStep
         fields = [
@@ -32,22 +35,39 @@ class TripStepSerializer(serializers.ModelSerializer):
             'travel_mode', 'travel_duration_minutes', 'travel_distance_meters'
         ]
 
-    def create(self, validated_data):
-        activity = validated_data.pop('activity_id', None)
-        event = validated_data.pop('event_id', None)
-        return TripStep.objects.create(activity=activity, event=event, **validated_data)
+    def _blocked_window_preview(self, trip_day, start_time, est_min, travel_min):
+        day = getattr(trip_day, "date", datetime.today().date())
+        start_dt = datetime.combine(day, start_time) - timedelta(minutes=(travel_min or 0))
+        end_dt   = datetime.combine(day, start_time) + timedelta(minutes=(est_min or 0))
+        return start_dt, end_dt
 
-    def update(self, instance, validated_data):
-        activity = validated_data.pop('activity_id', None)
-        event = validated_data.pop('event_id', None)
+    def validate(self, attrs):
+        trip_day = attrs.get('trip_day') or getattr(self.instance, 'trip_day', None)
+        start_time = attrs.get('start_time') or getattr(self.instance, 'start_time', None)
+        est_min = attrs.get('estimated_duration_minutes') if 'estimated_duration_minutes' in attrs else getattr(self.instance, 'estimated_duration_minutes', None)
+        travel_min = attrs.get('travel_duration_minutes') if 'travel_duration_minutes' in attrs else getattr(self.instance, 'travel_duration_minutes', 0)
 
-        instance.activity = activity
-        instance.event = event
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
-        return instance
+        # Normaliser travel_min
+        travel_min = travel_min or 0
 
+        if trip_day and start_time is not None and est_min is not None:
+            my_s, my_e = self._blocked_window_preview(trip_day, start_time, est_min, travel_min)
+
+            qs = trip_day.steps.all()
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+
+            for other in qs:
+                o_s = datetime.combine(trip_day.date, other.start_time) - timedelta(minutes=(other.travel_duration_minutes or 0))
+                o_e = datetime.combine(trip_day.date, other.start_time) + timedelta(minutes=(other.estimated_duration_minutes or 0))
+                if not (my_e <= o_s or o_e <= my_s):
+                    raise serializers.ValidationError({
+                        'start_time': _(
+                            "Overlaps with another step (%(s)s–%(e)s)."
+                        ) % {'s': o_s.strftime("%H:%M"), 'e': o_e.strftime("%H:%M")}
+                    })
+
+        return attrs
 
 
 class TripDaySerializer(serializers.ModelSerializer):
