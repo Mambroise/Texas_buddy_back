@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-46v8(xp!ryp))x=m=yarkmtrlw!jth$)3((*mb(^8*w)gydz!9
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2','192.168.0.22','192.168.1.153']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '10.0.2.2','192.168.0.15','192.168.1.153']
 
 
 # Application definition
@@ -204,6 +204,8 @@ EMAIL_HOST_USER = config('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 
 # API KEYS
+GOOGLE_MAPS_WEB_SERVICE_KEY = config("GOOGLE_MAPS_WEB_SERVICE_KEY", "")
+DISTANCE_CACHE_TTL_SECONDS = int(config("DISTANCE_CACHE_TTL_SECONDS", "1800"))
 GOOGLE_MAPS_API_KEY = config('GOOGLE_MAPS_API_KEY')
 
 GOOGLE_PLACES_API_KEY = config("GOOGLE_PLACES_API_KEY", "")

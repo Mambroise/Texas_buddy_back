@@ -22,6 +22,7 @@ from .views.tripstep_views import (
     TripStepMoveView,
     TripStepDeleteView
 )
+from .views.transport_views import TransportEstimateView
 
 app_name = 'planners'
 
@@ -44,5 +45,7 @@ urlpatterns = [
     path('trip-steps/', TripStepListCreateView.as_view(), name='tripstep-list-create'), # ok create ok list
     path('trip-steps/<int:pk>/', TripStepDeleteView.as_view(), name='tripstep-delete'), # ok delete
     path('trip-steps/<int:pk>/move/', TripStepMoveView.as_view(), name='tripstep-move'),
+
+    path("transport/estimate/", TransportEstimateView.as_view(), name="transport-estimate"),
 ]
 
