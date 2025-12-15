@@ -12,7 +12,7 @@ from django_ratelimit.decorators import ratelimit
 
 class GetRateLimitedAPIView(APIView):
     """APIView avec rate limit appliqué uniquement aux requêtes GET."""
-    rate = '3/1m'
+    rate = '10/1m'
     method = 'GET'
 
     @method_decorator(ratelimit(key='ip', rate=rate, method=method, block=True))
@@ -22,7 +22,7 @@ class GetRateLimitedAPIView(APIView):
 
 class PostRateLimitedAPIView(APIView):
     """APIView avec rate limit appliqué uniquement aux requêtes POST."""
-    rate = '3/1m'
+    rate = '10/1m'
     method = 'POST'
 
     @method_decorator(ratelimit(key='ip', rate=rate, method=method, block=True))
@@ -32,7 +32,7 @@ class PostRateLimitedAPIView(APIView):
 
 class PatchRateLimitedAPIView(APIView):
     """APIView avec rate limit appliqué uniquement aux requêtes PATCH."""
-    rate = '10/10m'
+    rate = '20/10m'
     method = 'PATCH'
 
     @method_decorator(ratelimit(key='ip', rate=rate, method=method, block=True))
@@ -42,7 +42,7 @@ class PatchRateLimitedAPIView(APIView):
 
 class DeleteRateLimitedAPIView(APIView):
     """APIView avec rate limit appliqué uniquement aux requêtes DELETE."""
-    rate = '7/10m'
+    rate = '20/10m'
     method = 'DELETE'
 
     @method_decorator(ratelimit(key='ip', rate=rate, method=method, block=True))
