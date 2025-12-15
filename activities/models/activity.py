@@ -43,9 +43,10 @@ class Activity(models.Model):
     duration = models.DurationField(blank=True, null=True)
     average_rating = models.FloatField(default=0.0)
     staff_favorite = models.BooleanField(default=False)
+    tips = models.CharField(max_length=255,null=True, blank=True)
     is_by_reservation = models.BooleanField(default=False)
     is_unique = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=True)  # on l'utilise en filtre
+    is_active = models.BooleanField(default=True)  
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

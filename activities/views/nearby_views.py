@@ -246,4 +246,5 @@ class NearbyListAPIView(APIView):
         page = paginator.paginate_queryset(combined, request)
 
         logger.info("[NEARBY_SEARCH] Returning %d items (paginated)", len(page) if page else 0)
+        
         return paginator.get_paginated_response(page)

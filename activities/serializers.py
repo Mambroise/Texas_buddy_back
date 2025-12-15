@@ -54,7 +54,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
             "id", "name", "place_id", "latitude", "longitude",
             "category", "primary_category",
             "staff_favorite", "price",
-            "has_promotion", "distance",
+            "has_promotion", "distance","duration",
             "type",
         ]
 

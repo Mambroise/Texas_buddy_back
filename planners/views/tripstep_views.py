@@ -36,6 +36,37 @@ class TripStepListCreateView(ListLogMixin, GetRateLimitedAPIView, ListCreateAPIV
     def get_queryset(self):
         return TripStep.objects.filter(trip_day__trip__user=self.request.user)
 
+# ─── TripStep Update View ───────────────────────────────────────────────────
+class TripStepUpdateView(PatchRateLimitedAPIView):
+    """
+    PATCH /planners/trip-steps/<pk>/update/
+
+    Update partiel d'un TripStep appartenant à l'utilisateur courant.
+    """
+    permission_classes = [IsAuthenticated]
+    throttle_classes = []  # déjà rate-limité par la base PatchRateLimitedAPIView
+
+    def patch(self, request, pk):
+      try:
+          step = TripStep.objects.get(pk=pk, trip_day__trip__user=request.user)
+      except TripStep.DoesNotExist:
+          logger.warning(
+              "[TRIPSTEP_UPDATE] Attempted to update non-existent TripStep (id=%s) by %s",
+              pk, request.user.email
+          )
+          return Response({"detail": _("TripStep not found.")},
+                          status=status.HTTP_404_NOT_FOUND)
+
+      serializer = TripStepSerializer(step, data=request.data, partial=True)
+      serializer.is_valid(raise_exception=True)
+      step = serializer.save()
+
+      logger.info(
+          "[TRIPSTEP_UPDATE] TripStep %s updated by %s",
+          step.id, request.user.email
+      )
+
+      return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # ─── TripStep Move View ─────────────────────────────────────────────────────
