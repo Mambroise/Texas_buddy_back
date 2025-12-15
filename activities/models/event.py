@@ -41,6 +41,7 @@ class Event(models.Model):
     price = models.FloatField(blank=True, null=True, db_index=True)
     duration = models.DurationField(blank=True, null=True)
     average_rating = models.FloatField(default=0.0)
+    tips = models.CharField(max_length=255,null=True, blank=True)
     staff_favorite = models.BooleanField(default=False)
     is_by_reservation = models.BooleanField(default=False)
     is_national = models.BooleanField(default=False)
