@@ -14,12 +14,16 @@ from django.contrib.auth.password_validation import validate_password
 
 #  User create
 class UserSerializer(serializers.ModelSerializer):
+    interests = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'address', 'country', 'sign_up_number', 'first_ip', 'second_ip']
+        fields = [
+            'first_name', 'last_name', 'email', 'phone', 'address', 'country',
+            'sign_up_number', 'first_ip', 'second_ip',
+            'interests'
+        ]
 
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
 
 
 # ask django to create new sign_up_number and send it in an email
@@ -54,7 +58,8 @@ class UserInterestsUpdateSerializer(serializers.ModelSerializer):
     # Accepter une liste d’IDs de catégories depuis le front
     interests = serializers.PrimaryKeyRelatedField(
         many=True,
-        queryset=Category.objects.all()
+        queryset=Category.objects.all(),
+        required=False
     )
 
     class Meta:
@@ -62,7 +67,7 @@ class UserInterestsUpdateSerializer(serializers.ModelSerializer):
         fields = ['interests']
 
     def update(self, instance, validated_data):
-        interests = validated_data.get('interests', [])
-        instance.interests.set(interests)  # remplace la liste actuelle
-        instance.save()
+        if 'interests' in validated_data:
+            instance.interests.set(validated_data['interests'])
+            instance.save()
         return instance
