@@ -45,7 +45,6 @@ class ActivityListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     primary_category = CategorySerializer(read_only=True)
     has_promotion = serializers.SerializerMethodField()
-    distance = serializers.FloatField(read_only=True)
     type = serializers.SerializerMethodField()
 
     class Meta:
@@ -54,7 +53,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
             "id", "name", "place_id", "latitude", "longitude",
             "category", "primary_category",
             "staff_favorite", "price",
-            "has_promotion", "distance","duration",
+            "has_promotion", "duration",
             "type",
         ]
 
@@ -72,7 +71,6 @@ class EventListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     primary_category = CategorySerializer(read_only=True)
     has_promotion = serializers.SerializerMethodField()
-    distance = serializers.FloatField(read_only=True)
     type = serializers.SerializerMethodField()
 
     class Meta:
@@ -82,8 +80,7 @@ class EventListSerializer(serializers.ModelSerializer):
             "start_datetime", "end_datetime",
             "category", "primary_category",
             "staff_favorite", "price",
-            "has_promotion", "distance",
-            "type",
+            "has_promotion","type",
         ]
 
     def get_type(self, obj): return "event"

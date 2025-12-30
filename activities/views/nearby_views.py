@@ -128,7 +128,7 @@ class NearbyListAPIView(APIView):
             """ % {'lat': user_lat, 'lng': user_lng}
             output_field = FloatField()
 
-        allowed_ordering = ['price', '-price', 'name', '-name', 'distance', '-distance']
+        allowed_ordering = ['price', '-price', 'name', '-name']
 
         def build_queryset(base_queryset, is_event=False):
             qs = (
@@ -167,10 +167,11 @@ class NearbyListAPIView(APIView):
 
 
             qs = apply_bounds(qs)
-            qs = qs.annotate(distance=Haversine())
+            allowed_ordering = ['price', '-price', 'name', '-name']
 
-            ordering = ordering_param if ordering_param in allowed_ordering else 'distance'
+            ordering = ordering_param if ordering_param in allowed_ordering else 'name'
             qs = qs.order_by(ordering)
+
 
             # cap côté SQL (évite de sérialiser trop d'objets)
             return qs[:cap]
@@ -179,18 +180,6 @@ class NearbyListAPIView(APIView):
         user = request.user
         ad_service = AdScoringService(user, "native", user_lat, user_lng)
         ads_qs = ad_service.get_best_ads()
-
-        def haversine_distance(lat1, lon1, lat2, lon2):
-            from math import radians, cos, sin, acos
-            R = 6371
-            try:
-                return round(R * acos(
-                    cos(radians(lat1)) * cos(radians(lat2)) *
-                    cos(radians(lon2) - radians(lon1)) +
-                    sin(radians(lat1)) * sin(radians(lat2))
-                ), 3)
-            except ValueError:
-                return None
 
         serialized_ads = []
         for ad in ads_qs:
@@ -204,12 +193,6 @@ class NearbyListAPIView(APIView):
                 data["type"] = "event"
             else:
                 continue
-
-            if obj.latitude is not None and obj.longitude is not None:
-                dist = haversine_distance(user_lat, user_lng, obj.latitude, obj.longitude)
-                data["distance"] = dist if dist is not None else 999999
-            else:
-                data["distance"] = 999999
 
             data["is_advertisement"] = True
             serialized_ads.append(data)
@@ -238,9 +221,8 @@ class NearbyListAPIView(APIView):
 
         # -------- Fusion: ads d'abord, puis tri distance sur le reste --------
         non_ads = activity_serialized + event_serialized
-        non_ads.sort(key=lambda x: x.get('distance', 999999))
-
         combined = serialized_ads + non_ads
+
 
         paginator = NearbyPagination()
         page = paginator.paginate_queryset(combined, request)
