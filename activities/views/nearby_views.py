@@ -175,8 +175,22 @@ class NearbyListAPIView(APIView):
 
             # cap côté SQL (évite de sérialiser trop d'objets)
             return qs[:cap]
-
+        
+        
         # -------- Ads scoring + sérialisation --------
+        user = request.user
+
+        # ✅ 1 query max : set des catégories d’intérêt (IDs)
+        user_interest_ids = set(
+            user.interests.values_list("id", flat=True)
+        )
+
+        # ✅ context commun à tous les serializers nearby
+        serializer_ctx = {
+            "request": request,
+            "user_interest_ids": user_interest_ids,
+        }
+
         user = request.user
         ad_service = AdScoringService(user, "native", user_lat, user_lng)
         ads_qs = ad_service.get_best_ads()
@@ -185,11 +199,11 @@ class NearbyListAPIView(APIView):
         for ad in ads_qs:
             if ad.related_activity:
                 obj = ad.related_activity
-                data = ActivityListSerializer(obj, context={'request': request}).data
+                data = ActivityListSerializer(obj, context=serializer_ctx).data
                 data["type"] = "activity"
             elif ad.related_event:
                 obj = ad.related_event
-                data = EventListSerializer(obj, context={'request': request}).data
+                data = EventListSerializer(obj, context=serializer_ctx).data
                 data["type"] = "event"
             else:
                 continue
@@ -207,14 +221,14 @@ class NearbyListAPIView(APIView):
 
         if type_filter in [None, '', 'activity']:
             a_qs = build_queryset(Activity.objects.all())
-            activity_serialized = ActivityListSerializer(a_qs, many=True, context={'request': request}).data
+            activity_serialized = ActivityListSerializer(a_qs, many=True, context=serializer_ctx).data
             for item in activity_serialized:
                 item['type'] = 'activity'
             logger.info("[NEARBY_SEARCH] %d nearby activities", len(activity_serialized))
 
         if type_filter in [None, '', 'event']:
             e_qs = build_queryset(Event.objects.all(), is_event=True)
-            event_serialized = EventListSerializer(e_qs, many=True, context={'request': request}).data
+            event_serialized    = EventListSerializer(e_qs, many=True, context=serializer_ctx).data
             for item in event_serialized:
                 item['type'] = 'event'
             logger.info("[NEARBY_SEARCH] %d nearby events", len(event_serialized))
