@@ -46,6 +46,7 @@ class ActivityListSerializer(serializers.ModelSerializer):
     primary_category = CategorySerializer(read_only=True)
     has_promotion = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
+    matches_user_interest = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
@@ -54,10 +55,15 @@ class ActivityListSerializer(serializers.ModelSerializer):
             "category", "primary_category",
             "staff_favorite", "price",
             "has_promotion", "duration",
-            "type",
+            "type","matches_user_interest",
         ]
 
     def get_type(self, obj): return "activity"
+
+    def get_matches_user_interest(self, obj):
+        interest_ids = self.context.get("user_interest_ids") or set()
+        primary_id = getattr(obj, "primary_category_id", None)
+        return bool(primary_id and primary_id in interest_ids)
 
     def get_has_promotion(self, obj):
         ref_date = _reference_date_from_request(self.context.get('request'))
@@ -67,11 +73,13 @@ class ActivityListSerializer(serializers.ModelSerializer):
             end_date__gte=ref_date
         ).exists()
 
+
 class EventListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(many=True)
     primary_category = CategorySerializer(read_only=True)
     has_promotion = serializers.SerializerMethodField()
     type = serializers.SerializerMethodField()
+    matches_user_interest = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -80,10 +88,16 @@ class EventListSerializer(serializers.ModelSerializer):
             "start_datetime", "end_datetime",
             "category", "primary_category",
             "staff_favorite", "price",
-            "has_promotion","type",
+            "has_promotion", "type",
+            "matches_user_interest",
         ]
 
     def get_type(self, obj): return "event"
+
+    def get_matches_user_interest(self, obj):
+        interest_ids = self.context.get("user_interest_ids") or set()
+        primary_id = getattr(obj, "primary_category_id", None)
+        return bool(primary_id and primary_id in interest_ids)
 
     def get_has_promotion(self, obj):
         ref_date = _reference_date_from_request(self.context.get('request'))
@@ -92,6 +106,7 @@ class EventListSerializer(serializers.ModelSerializer):
             start_date__lte=ref_date,
             end_date__gte=ref_date
         ).exists()
+
 
 # -- DÉTAIL: ouverts au double-tap / tap sur le label --------------------------
 
